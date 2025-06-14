@@ -30,7 +30,7 @@ Visor est un outil de visualisation du trafic réseau en temps réel, conçu pou
 | Langage backend   | Python 3                         |
 | Capture réseau    | [Scapy](https://scapy.net/)     |
 | API               | FastAPI                          |
-| Frontend          | D3.js ou Three.js (à décider)    |
+| Frontend          | D3.js                             |
 | Base de données   | SQLite ou stockage JSON         |
 | Géolocalisation   | IP2Location / GeoLite2          |
 | Visualisation     | WebSocket + affichage dynamique |
@@ -42,7 +42,7 @@ Visor est un outil de visualisation du trafic réseau en temps réel, conçu pou
 > **Pré-requis :**
 > - Python 3.10+
 > - `virtualenv`
-> - Node.js (pour le frontend plus tard)
+- Node.js (optionnel, non requis pour la version actuelle)
 
 ```bash
 git clone https://github.com/ton_pseudo/visor.git
@@ -71,7 +71,7 @@ capture quelques instants et observez l’évolution du réseau !
 | 🔧 Phase 1 | Capture réseau minimale (Scapy ou pcap) + log | ✔️ |
 | 🔧 Phase 2 | API REST (FastAPI) exposant les flux | ✔️ |
 | 🔧 Phase 3 | Frontend minimal affichant les connexions | ✔️ |
-| 🔧 Phase 4 | Visualisation dynamique (D3/Three.js) | 🔜 |
+| 🔧 Phase 4 | Visualisation dynamique (D3.js) | ✔️ |
 | 🔧 Phase 5 | Détection d’anomalies réseau basiques | 🔜 |
 | 🌐 Phase 6 | Géolocalisation des IP et affichage sur carte | 🔜 |
 | 📦 Phase 7 | Export JSON / PNG / GIF des sessions | 🔜 |
