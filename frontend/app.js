@@ -70,12 +70,11 @@ function drag(simulation) {
 
 const ws = new WebSocket(`ws://${location.host}/ws`);
 ws.onmessage = (event) => {
-  const summaries = JSON.parse(event.data);
-  summaries.forEach(summary => {
-    const m = summary.match(/IP\s(\S+)\s>\s(\S+):/);
-    if (!m) return;
-    const src = m[1];
-    const dst = m[2];
+  const packets = JSON.parse(event.data);
+  packets.forEach(pkt => {
+    const src = pkt.src;
+    const dst = pkt.dst;
+    if (!src || !dst) return;
     if (!nodes.has(src)) nodes.set(src, {id: src});
     if (!nodes.has(dst)) nodes.set(dst, {id: dst});
     const key = `${src}->${dst}`;

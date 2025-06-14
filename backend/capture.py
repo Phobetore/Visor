@@ -1,4 +1,4 @@
-from scapy.all import sniff, Packet
+from scapy.all import sniff, Packet, IP
 from threading import Thread, Event
 
 from typing import List
@@ -40,6 +40,24 @@ class PacketCapture:
     def get_summary_since(self, index: int) -> List[str]:
         """Return packet summaries starting from a given index."""
         return [p.summary() for p in self.packets[index:]]
+
+    def get_connections(self) -> List[dict]:
+        """Return a list of dicts with src and dst for IP packets."""
+        connections = []
+        for p in self.packets:
+            if IP in p:
+                ip_layer = p[IP]
+                connections.append({"src": ip_layer.src, "dst": ip_layer.dst})
+        return connections
+
+    def get_connections_since(self, index: int) -> List[dict]:
+        """Return src/dst dictionaries for packets since index."""
+        connections = []
+        for p in self.packets[index:]:
+            if IP in p:
+                ip_layer = p[IP]
+                connections.append({"src": ip_layer.src, "dst": ip_layer.dst})
+        return connections
 
     @property
     def size(self) -> int:
