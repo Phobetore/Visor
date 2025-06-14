@@ -13,6 +13,7 @@ Visor est un outil de visualisation du trafic réseau en temps réel, conçu pou
 - Géolocaliser les IP et représenter le trafic sur une carte
 - Détecter et signaler des anomalies simples (trafic inhabituel, ports suspects…)
 - Fournir un outil éducatif et démonstratif pour étudiants, pentesters, analystes réseau
+- Interface web cyberpunk pour la visualisation
 
 ---
 
@@ -36,7 +37,7 @@ Visor est un outil de visualisation du trafic réseau en temps réel, conçu pou
 
 ---
 
-## 🚀 Lancer le projet (MVP à venir)
+## 🚀 Lancer le projet
 
 > **Pré-requis :**
 > - Python 3.10+
@@ -50,9 +51,15 @@ python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# Lancement initial (mock ou pcap temporaire)
+# Lancement de l'API
 python main.py
+# Puis ouvrez http://localhost:8000 pour l'interface cyberpunk
 ```
+
+Une fois le serveur lancé, l'interface communique en temps réel via WebSocket
+pour afficher un graphe dynamique des paquets capturés. Les liens sont filtrés
+pour éviter les doublons et garder la visualisation lisible. Laissez tourner la
+capture quelques instants et observez l’évolution du réseau !
 
 ---
 
@@ -61,9 +68,9 @@ python main.py
 | Phase | Objectifs | Statut |
 |-------|-----------|--------|
 | ✅ Phase 0 | Initialisation du dépôt, README, structure de base | ✔️ |
-| 🔧 Phase 1 | Capture réseau minimale (Scapy ou pcap) + log | 🔜 |
-| 🔧 Phase 2 | API REST (FastAPI) exposant les flux | 🔜 |
-| 🔧 Phase 3 | Frontend minimal affichant les connexions | 🔜 |
+| 🔧 Phase 1 | Capture réseau minimale (Scapy ou pcap) + log | ✔️ |
+| 🔧 Phase 2 | API REST (FastAPI) exposant les flux | ✔️ |
+| 🔧 Phase 3 | Frontend minimal affichant les connexions | ✔️ |
 | 🔧 Phase 4 | Visualisation dynamique (D3/Three.js) | 🔜 |
 | 🔧 Phase 5 | Détection d’anomalies réseau basiques | 🔜 |
 | 🌐 Phase 6 | Géolocalisation des IP et affichage sur carte | 🔜 |
