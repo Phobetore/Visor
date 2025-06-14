@@ -45,7 +45,7 @@ Visor est un outil de visualisation du trafic réseau en temps réel, conçu pou
 - Node.js (optionnel, non requis pour la version actuelle)
 
 ```bash
-git clone https://github.com/ton_pseudo/visor.git
+git clone https://github.com/Phobetore/Visor.git
 cd visor
 python -m venv venv
 source venv/bin/activate
