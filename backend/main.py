@@ -29,7 +29,8 @@ def shutdown_event():
 
 @app.get("/packets")
 def get_packets():
-    return JSONResponse(capture.get_summary())
+    """Return all captured connections as src/dst dicts."""
+    return JSONResponse(capture.get_connections())
 
 
 @app.websocket("/ws")
@@ -39,7 +40,7 @@ async def websocket_endpoint(ws: WebSocket):
     try:
         while True:
             await asyncio.sleep(1)
-            new_packets = capture.get_summary_since(last)
+            new_packets = capture.get_connections_since(last)
             last = capture.size
             if new_packets:
                 await ws.send_json(new_packets)
