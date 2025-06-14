@@ -56,6 +56,13 @@ python main.py
 # Puis ouvrez http://localhost:8000 pour l'interface cyberpunk
 ```
 
+### Utilisateurs Windows
+
+- Installez [Npcap](https://npcap.com/) en mode compatible **WinPcap**.
+- Lancez `python main.py` depuis un terminal **Administrateur**.
+
+> **Pas de paquets ?** Vérifiez que Npcap est bien installé et qu'aucun antivirus ou pare-feu ne bloque la capture.
+
 Une fois le serveur lancé, l'interface communique en temps réel via WebSocket
 pour afficher un graphe dynamique des paquets capturés. Les liens sont filtrés
 pour éviter les doublons et garder la visualisation lisible. Laissez tourner la
