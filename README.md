@@ -102,4 +102,4 @@ MIT – fais-en bon usage, améliore-le, partage.
 ## 👨‍💻 Auteur
 
 Projet initié par **core.layer**/**Phobetore** 
-Alternant en cybersécurité | Passionné de visualisation réseau | Offensive & defensive mindset
+Alternant en cybersécurité | Passionné de Dev/Cyber | Offensive & defensive mindset
