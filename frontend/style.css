@@ -83,7 +83,7 @@ h1 {
 line {
     stroke: #f0f;
     stroke-opacity: 0.6;
-    marker-end: url(#arrow);
+    stroke-linecap: round;
 }
 
 circle {
@@ -107,6 +107,6 @@ path.connection {
     stroke: #f0f;
     stroke-opacity: 0.6;
     fill: none;
-    marker-end: url(#arrow);
+    stroke-linecap: round;
     transition: opacity 1s ease-out;
 }

@@ -24,18 +24,6 @@ const projection = d3.geoMercator();
 projection.fitSize([width, height], {type: 'Sphere'});
 const path = d3.geoPath().projection(projection);
 
-svg.append('defs').append('marker')
-  .attr('id', 'arrow')
-  .attr('viewBox', '0 -5 10 10')
-  .attr('refX', 10)
-  .attr('refY', 0)
-  .attr('markerWidth', 6)
-  .attr('markerHeight', 6)
-  .attr('orient', 'auto')
-  .append('path')
-  .attr('d', 'M0,-5L10,0L0,5')
-  .attr('fill', '#f0f');
-
 // enable zoom and pan on the map
 const zoom = d3.zoom()
   .scaleExtent([1, 8])
