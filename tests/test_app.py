@@ -31,7 +31,7 @@ class DummyCapture:
 def test_websocket_close(monkeypatch):
     dummy = DummyCapture()
     monkeypatch.setattr(main, "capture", dummy)
-    monkeypatch.setattr(geo, "geolocate_ip", lambda ip: (0, 0, ""))
+    monkeypatch.setattr(main, "geolocate_ip", lambda ip: (0, 0, ""))
     with TestClient(main.app) as client:
         with client.websocket_connect("/ws") as websocket:
             data = websocket.receive_json()
@@ -53,7 +53,6 @@ def test_websocket_geolocation_and_anomaly(monkeypatch):
     dummy = DummyCapture()
     monkeypatch.setattr(main, "capture", dummy)
     monkeypatch.setattr(main, "geolocate_ip", lambda ip: (1.0, 2.0, "XX"))
-    monkeypatch.setattr(geo, "geolocate_ip", lambda ip: (1.0, 2.0, "XX"))
     monkeypatch.setattr(main, "traffic_count", defaultdict(int, {"1.1.1.1": 50}))
     monkeypatch.setattr(main, "reported_anomalies", set())
 
