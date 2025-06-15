@@ -67,8 +67,27 @@ text.label {
 }
 
 path.connection {
-    stroke: #f0f;
     stroke-opacity: 0.6;
     fill: none;
     marker-end: url(#arrow);
+}
+
+path.connection.local {
+    stroke: #0f0;
+}
+
+path.connection.internet {
+    stroke: #f0f;
+}
+
+#filters {
+    margin: 10px 0;
+}
+
+#filters label {
+    margin-right: 10px;
+}
+
+.hidden {
+    display: none;
 }

@@ -22,6 +22,24 @@ svg.append('defs').append('marker')
 
 const linesGroup = svg.append('g');
 
+let showLocal = true;
+let showInternet = true;
+document.getElementById('filter-local').addEventListener('change', (e) => {
+  showLocal = e.target.checked;
+  updateVisibility();
+});
+document.getElementById('filter-internet').addEventListener('change', (e) => {
+  showInternet = e.target.checked;
+  updateVisibility();
+});
+
+function updateVisibility() {
+  linesGroup.selectAll('path.connection.local')
+    .classed('hidden', !showLocal);
+  linesGroup.selectAll('path.connection.internet')
+    .classed('hidden', !showInternet);
+}
+
 d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(world => {
   const countries = topojson.feature(world, world.objects.countries);
   svg.append('path')
@@ -43,7 +61,8 @@ function drawConnection(pkt) {
   linesGroup.append('path')
     .datum(feature)
     .attr('d', path)
-    .attr('class', 'connection');
+    .attr('class', `connection ${pkt.type}`);
+  updateVisibility();
 }
 
 const logsEl = document.getElementById('logs');
@@ -64,7 +83,7 @@ ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   (data.packets || []).forEach(pkt => {
     drawConnection(pkt);
-    addLog(`${pkt.src} -> ${pkt.dst}`);
+    addLog(`${pkt.src} -> ${pkt.dst} [${pkt.type}]`);
   });
   (data.anomalies || []).forEach(a => addAnomaly(a));
 };

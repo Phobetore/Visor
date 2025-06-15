@@ -1,4 +1,5 @@
 import asyncio
+import ipaddress
 from collections import defaultdict
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -18,7 +19,29 @@ def read_index():
 
 capture = PacketCapture()
 traffic_count = defaultdict(int)
+traffic_destinations = defaultdict(set)
 reported_anomalies = set()
+
+
+def is_private_ip(ip: str) -> bool:
+    """Return True if the IP address is in a private range."""
+    try:
+        return ipaddress.ip_address(ip).is_private
+    except ValueError:
+        return False
+
+
+def classify_traffic(src: str, dst: str) -> str:
+    """Classify traffic type based on IP ranges."""
+    src_priv = is_private_ip(src)
+    dst_priv = is_private_ip(dst)
+    if src_priv and dst_priv:
+        return "local"
+    if src_priv and not dst_priv:
+        return "outgoing"
+    if not src_priv and dst_priv:
+        return "incoming"
+    return "external"
 
 
 @app.on_event("startup")
@@ -51,8 +74,11 @@ async def websocket_endpoint(ws: WebSocket):
             for pkt in new_packets:
                 src = pkt.get("src")
                 dst = pkt.get("dst")
+                traffic_count[src] += 1
+                traffic_destinations[src].add(dst)
                 slat, slon, _ = geolocate_ip(src)
                 dlat, dlon, _ = geolocate_ip(dst)
+                ttype = classify_traffic(src, dst)
                 info = {
                     "src": src,
                     "dst": dst,
@@ -60,10 +86,13 @@ async def websocket_endpoint(ws: WebSocket):
                     "src_lon": slon,
                     "dst_lat": dlat,
                     "dst_lon": dlon,
+                    "type": ttype,
                 }
-                traffic_count[src] += 1
                 if traffic_count[src] > 50 and src not in reported_anomalies:
                     anomalies.append(f"High traffic from {src}")
+                    reported_anomalies.add(src)
+                if len(traffic_destinations[src]) > 20 and src not in reported_anomalies:
+                    anomalies.append(f"Possible scanning from {src}")
                     reported_anomalies.add(src)
                 enriched.append(info)
             if enriched or anomalies:
