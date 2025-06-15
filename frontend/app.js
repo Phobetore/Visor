@@ -23,7 +23,7 @@ svg.append('defs').append('marker')
 const linesGroup = svg.append('g');
 const seenPairs = new Set();
 
-d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(world => {
+d3.json('/static/js/countries-110m.json').then(world => {
   const countries = topojson.feature(world, world.objects.countries);
   svg.append('path')
     .datum(countries)
@@ -32,8 +32,41 @@ d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(w
     .attr('stroke', '#555');
 });
 
+// Traffic filter state
+const filters = {
+  'private-private': true,
+  'private-public': true,
+  'public-private': true,
+  'public-public': true
+};
+
+// Initialize checkbox listeners
+document.querySelectorAll('#filters input[type="checkbox"]').forEach(cb => {
+  filters[cb.id] = cb.checked;
+  cb.addEventListener('change', () => {
+    filters[cb.id] = cb.checked;
+  });
+});
+
+function isPrivate(ip) {
+  return /^10\./.test(ip) ||
+         /^192\.168\./.test(ip) ||
+         /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(ip);
+}
+
+function trafficType(pkt) {
+  const srcPriv = isPrivate(pkt.src);
+  const dstPriv = isPrivate(pkt.dst);
+  if (srcPriv && dstPriv) return 'private-private';
+  if (srcPriv && !dstPriv) return 'private-public';
+  if (!srcPriv && dstPriv) return 'public-private';
+  return 'public-public';
+}
+
 function drawConnection(pkt) {
   if (pkt.src_lat == null || pkt.dst_lat == null) return;
+  const type = trafficType(pkt);
+  if (!filters[type]) return;
   const feature = {
     type: 'LineString',
     coordinates: [
@@ -41,10 +74,16 @@ function drawConnection(pkt) {
       [pkt.dst_lon, pkt.dst_lat]
     ]
   };
+  let color = '#f0f';
+  if (pkt.type === 'local-local') color = 'green';
+  else if (pkt.type === 'local-public') color = 'blue';
+  else if (pkt.type === 'public-local') color = 'red';
+
   linesGroup.append('path')
     .datum(feature)
     .attr('d', path)
-    .attr('class', 'connection');
+    .attr('class', 'connection')
+    .attr('stroke', color);
 }
 
 const logsEl = document.getElementById('logs');
@@ -64,12 +103,11 @@ const ws = new WebSocket(`ws://${location.host}/ws`);
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   (data.packets || []).forEach(pkt => {
-    const key = `${pkt.src}-${pkt.dst}`;
-    if (!seenPairs.has(key)) {
-      drawConnection(pkt);
-      seenPairs.add(key);
-    }
-    addLog(`${pkt.src} -> ${pkt.dst}`);
+    drawConnection(pkt);
+    const ports = (pkt.src_port != null && pkt.dst_port != null) ?
+      `${pkt.src}:${pkt.src_port} -> ${pkt.dst}:${pkt.dst_port}` :
+      `${pkt.src} -> ${pkt.dst}`;
+    addLog(`${pkt.proto} ${ports}`);
   });
   (data.anomalies || []).forEach(a => addAnomaly(a));
 };
