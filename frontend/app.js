@@ -29,6 +29,7 @@ svg.append('defs').append('marker')
   .attr('fill', '#f0f');
 
 const linesGroup = svg.append('g');
+// Track drawn connections to avoid rendering duplicates simultaneously
 const seenPairs = new Set();
 const connectionTableBody = document.querySelector('#connections tbody');
 const activeConnections = new Map();
@@ -92,6 +93,9 @@ function drawConnection(pkt) {
   if (pkt.src_lat == null || pkt.dst_lat == null) return;
   const type = trafficType(pkt);
   if (!filters[type]) return;
+  const pairKey = `${pkt.src}->${pkt.dst}`;
+  if (seenPairs.has(pairKey)) return;
+  seenPairs.add(pairKey);
   const feature = {
     type: 'LineString',
     coordinates: [
@@ -104,16 +108,19 @@ function drawConnection(pkt) {
   else if (pkt.type === 'local-public') color = 'blue';
   else if (pkt.type === 'public-local') color = 'red';
 
-  linesGroup.append('path')
+  const line = linesGroup.append('path')
     .datum(feature)
     .attr('d', path)
     .attr('class', 'connection')
     .attr('stroke', color)
-    .attr('opacity', 1)
-    .transition()
+    .attr('opacity', 1);
+  line.transition()
     .duration(6000)
     .attr('opacity', 0)
-    .remove();
+    .on('end', function() {
+      d3.select(this).remove();
+      seenPairs.delete(pairKey);
+    });
 }
 
 const anomaliesEl = document.getElementById('anomalies');
