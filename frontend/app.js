@@ -6,6 +6,9 @@ const svg = d3.select('#map').append('svg')
   .attr('width', '100%')
   .attr('height', '100%');
 
+// container for definitions (currently unused but kept for future needs)
+svg.append('defs');
+
 // group used for zoom/pan transformations
 const zoomGroup = svg.append('g');
 // layer for the world map
@@ -49,8 +52,10 @@ const graphZoom = d3.zoom()
 gsvg.call(graphZoom);
 const simulation = d3.forceSimulation()
   .force('link', d3.forceLink().id(d => d.id).distance(60))
-  .force('charge', d3.forceManyBody().strength(-100))
-  .force('center', d3.forceCenter(gwidth / 2, gheight / 2));
+  .force('charge', d3.forceManyBody().strength(-50))
+  .force('center', d3.forceCenter(gwidth / 2, gheight / 2))
+  .force('x', d3.forceX(gwidth / 2).strength(0.05))
+  .force('y', d3.forceY(gheight / 2).strength(0.05));
 
 d3.json('/static/js/countries-110m.json').then(world => {
   const countries = topojson.feature(world, world.objects.countries);
@@ -128,8 +133,17 @@ function drawConnection(pkt) {
     .attr('class', 'connection')
     .attr('stroke', color)
     .attr('opacity', 1);
-  line.transition()
-    .duration(6000)
+
+  const length = line.node().getTotalLength();
+  line
+    .attr('stroke-dasharray', `${length} ${length}`)
+    .attr('stroke-dashoffset', length)
+    .transition()
+    .duration(1000)
+    .attr('stroke-dashoffset', 0)
+    .transition()
+    .duration(5000)
+    .attr('stroke-dashoffset', -length)
     .attr('opacity', 0)
     .on('end', function() {
       d3.select(this).remove();
