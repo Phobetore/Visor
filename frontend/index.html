@@ -6,16 +6,19 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h1>VISOR</h1>
+    <header>
+        <h1>VISOR</h1>
+        <button id="toggleSidebar">☰</button>
+    </header>
     <div id="container">
         <div id="map"></div>
         <div id="graph"></div>
         <div id="sidebar">
         <h2>Filters</h2>
         <div id="filters">
-            <label><input type="checkbox" id="private-private" checked> Private ➜ Private</label><br>
-            <label><input type="checkbox" id="private-public" checked> Private ➜ Public</label><br>
-            <label><input type="checkbox" id="public-private" checked> Public ➜ Private</label><br>
+            <label><input type="checkbox" id="private-private" checked> Private ➜ Private</label>
+            <label><input type="checkbox" id="private-public" checked> Private ➜ Public</label>
+            <label><input type="checkbox" id="public-private" checked> Public ➜ Private</label>
             <label><input type="checkbox" id="public-public" checked> Public ➜ Public</label>
         </div>
         <h2>Active Connections</h2>
