@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse, FileResponse
 
 from .capture import PacketCapture
 from .geo import async_geolocate_ip
+from . import geo
 
 app = FastAPI(title="Visor")
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
@@ -68,11 +69,11 @@ async def websocket_endpoint(ws: WebSocket):
             for pkt in new_packets:
                 src = pkt.get("src")
                 dst = pkt.get("dst")
-                src_port = pkt.get("src_port")
-                dst_port = pkt.get("dst_port")
+                src_port = pkt.get("src_port") or pkt.get("sport")
+                dst_port = pkt.get("dst_port") or pkt.get("dport")
                 proto = pkt.get("proto")
-                slat, slon, _ = geolocate_ip(src)
-                dlat, dlon, _ = geolocate_ip(dst)
+                slat, slon, _ = await async_geolocate_ip(src)
+                dlat, dlon, _ = await async_geolocate_ip(dst)
 
                 if is_local_ip(src) and is_local_ip(dst):
                     conn_type = "local-local"
@@ -104,8 +105,8 @@ async def websocket_endpoint(ws: WebSocket):
                     dest_changed.add(src)
                 traffic_destinations[src].add(dst)
 
-                if dport is not None:
-                    port_scan_tracker[src][dst].add(dport)
+                if dst_port is not None:
+                    port_scan_tracker[src][dst].add(dst_port)
                     if len(port_scan_tracker[src][dst]) > 10 and (src, dst) not in reported_port_scans:
                         anomalies.append(f"Port scan from {src} to {dst}")
                         reported_port_scans.add((src, dst))
