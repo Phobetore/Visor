@@ -7,8 +7,9 @@
 </head>
 <body>
     <h1>VISOR</h1>
-    <div id="map"></div>
-    <div id="sidebar">
+    <div id="container">
+        <div id="map"></div>
+        <div id="sidebar">
         <h2>Filters</h2>
         <div id="filters">
             <label><input type="checkbox" id="private-private" checked> Private ➜ Private</label><br>
@@ -16,10 +17,16 @@
             <label><input type="checkbox" id="public-private" checked> Public ➜ Private</label><br>
             <label><input type="checkbox" id="public-public" checked> Public ➜ Public</label>
         </div>
-        <h2>Logs</h2>
-        <pre id="logs"></pre>
+        <h2>Active Connections</h2>
+        <table id="connections">
+            <thead>
+                <tr><th>Source</th><th></th><th>Destination</th><th>Proto</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
         <h2>Anomalies</h2>
         <pre id="anomalies"></pre>
+        </div>
     </div>
     <script src="/static/js/d3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>

@@ -72,8 +72,8 @@ async def websocket_endpoint(ws: WebSocket):
                 src_port = pkt.get("src_port") or pkt.get("sport")
                 dst_port = pkt.get("dst_port") or pkt.get("dport")
                 proto = pkt.get("proto")
-                slat, slon, _ = await async_geolocate_ip(src)
-                dlat, dlon, _ = await async_geolocate_ip(dst)
+                slat, slon, scountry, scc = await async_geolocate_ip(src)
+                dlat, dlon, dcountry, dcc = await async_geolocate_ip(dst)
 
                 if is_local_ip(src) and is_local_ip(dst):
                     conn_type = "local-local"
@@ -92,8 +92,12 @@ async def websocket_endpoint(ws: WebSocket):
                     "proto": proto,
                     "src_lat": slat,
                     "src_lon": slon,
+                    "src_country": scountry,
+                    "src_country_code": scc,
                     "dst_lat": dlat,
                     "dst_lon": dlon,
+                    "dst_country": dcountry,
+                    "dst_country_code": dcc,
                     "type": conn_type,
                 }
                 traffic_count[src] += 1
