@@ -64,7 +64,10 @@ ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   (data.packets || []).forEach(pkt => {
     drawConnection(pkt);
-    addLog(`${pkt.src} -> ${pkt.dst}`);
+    const ports = (pkt.src_port != null && pkt.dst_port != null) ?
+      `${pkt.src}:${pkt.src_port} -> ${pkt.dst}:${pkt.dst_port}` :
+      `${pkt.src} -> ${pkt.dst}`;
+    addLog(`${pkt.proto} ${ports}`);
   });
   (data.anomalies || []).forEach(a => addAnomaly(a));
 };
