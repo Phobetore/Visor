@@ -37,7 +37,7 @@ class DummyCapture:
 def test_websocket_close(monkeypatch):
     dummy = DummyCapture()
     async def dummy_geo(ip):
-        return (0, 0, "")
+        return (0, 0, "", "")
 
     monkeypatch.setattr(main, "capture", dummy)
     monkeypatch.setattr(main, "async_geolocate_ip", dummy_geo)
@@ -88,7 +88,7 @@ def test_port_scan_detection(monkeypatch):
     monkeypatch.setattr(main, "reported_port_scans", set())
     monkeypatch.setattr(main, "reported_unusual_protos", set())
     monkeypatch.setattr(main, "reported_anomalies", set())
-    monkeypatch.setattr(geo, "async_geolocate_ip", lambda ip: (0, 0, ""))
+    monkeypatch.setattr(geo, "async_geolocate_ip", lambda ip: (0, 0, "", ""))
     with TestClient(main.app) as client:
         with client.websocket_connect("/ws") as websocket:
             data = websocket.receive_json()
@@ -109,7 +109,7 @@ def test_websocket_geolocation_and_anomaly(monkeypatch):
     dummy = DummyCapture()
     monkeypatch.setattr(main, "capture", dummy)
     async def dummy_geo_loc(ip):
-        return (1.0, 2.0, "XX")
+        return (1.0, 2.0, "XX", "XX")
     monkeypatch.setattr(main, "async_geolocate_ip", dummy_geo_loc)
     monkeypatch.setattr(main, "traffic_count", defaultdict(int, {"1.1.1.1": 50}))
     monkeypatch.setattr(main, "reported_anomalies", set())
