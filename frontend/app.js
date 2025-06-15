@@ -35,6 +35,7 @@ const connectionTableBody = document.querySelector('#connections tbody');
 const activeConnections = new Map();
 const graphNodes = new Map();
 let graphLinks = [];
+const MAX_TABLE_ROWS = 50;
 const linkGroup = gsvg.append('g');
 const nodeGroup = gsvg.append('g');
 const simulation = d3.forceSimulation()
@@ -217,6 +218,9 @@ function updateConnection(pkt) {
     tr.innerHTML = rowHtml;
     tr.style.color = colorMap[pkt.type] || '#f0f';
     connectionTableBody.appendChild(tr);
+    while (connectionTableBody.rows.length > MAX_TABLE_ROWS) {
+      connectionTableBody.deleteRow(0);
+    }
     rec = {tr};
     activeConnections.set(key, rec);
   } else {

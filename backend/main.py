@@ -5,12 +5,25 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from ipaddress import ip_address
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, FileResponse
+from contextlib import asynccontextmanager
 
 from .capture import PacketCapture
 from .geo import async_geolocate_ip
 from . import geo
 
-app = FastAPI(title="Visor")
+capture = PacketCapture()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    capture.start()
+    try:
+        yield
+    finally:
+        capture.stop()
+
+
+app = FastAPI(title="Visor", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 
@@ -18,7 +31,6 @@ app.mount("/static", StaticFiles(directory="frontend"), name="static")
 def read_index():
     return FileResponse("frontend/index.html")
 
-capture = PacketCapture()
 traffic_count = defaultdict(int)
 traffic_destinations = defaultdict(set)
 dest_prev_counts = defaultdict(int)
@@ -38,14 +50,6 @@ def is_local_ip(ip: str) -> bool:
         return False
 
 
-@app.on_event("startup")
-def startup_event():
-    capture.start()
-
-
-@app.on_event("shutdown")
-def shutdown_event():
-    capture.stop()
 
 
 @app.get("/packets")
