@@ -70,6 +70,7 @@ header {
 }
 
 #sidebar {
+    width: 250px;
     height: 100%;
     margin-left: 20px;
     padding: 10px;
@@ -78,11 +79,11 @@ header {
     background: rgba(0, 0, 0, 0.5);
     color: #2af;
     overflow-y: auto;
-    transition: transform 0.3s ease;
+    transition: margin-left 0.3s ease;
 }
 
 #sidebar.collapsed {
-    transform: translateX(100%);
+    margin-left: -250px;
 }
 
 #filters label {
@@ -172,5 +173,8 @@ circle.highlight {
         width: 100%;
         margin-left: 0;
         height: auto;
+    }
+    #sidebar.collapsed {
+        display: none;
     }
 }
