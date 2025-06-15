@@ -61,7 +61,7 @@ circle.private {
 
 text.label {
     fill: #0ff;
-    font-size: 10px;
+    font-size: 12px;
     pointer-events: none;
     text-shadow: 0 0 2px #000;
 }
