@@ -10,7 +10,7 @@ async def async_geolocate_ip(ip: str):
         return _cache[ip]
     try:
         async with httpx.AsyncClient() as client:
-            resp = await client.get(f"https://ip-api.com/json/{ip}", timeout=5)
+            resp = await client.get(f"http://ip-api.com/json/{ip}", timeout=5)
             data = resp.json()
             if data.get("status") == "success":
                 result = (
