@@ -68,6 +68,14 @@ pour afficher un graphe dynamique des paquets capturés. Les liens sont filtrés
 pour éviter les doublons et garder la visualisation lisible. Laissez tourner la
 capture quelques instants et observez l’évolution du réseau !
 
+### 🕸️ Graphe de nœuds en temps réel
+
+Chaque IP capturée apparaît sous forme de nœud, relié aux autres par des liens
+qui représentent les connexions détectées. Le graphe s'actualise en continu et
+les couleurs des lignes indiquent le type de trafic (TCP, UDP, ICMP, etc.). Les
+nœuds peuvent être glissés-déposés à la souris pour réorganiser l'affichage et
+explorer plus facilement les relations entre machines.
+
 ### 🔍 Règles de détection d’anomalies
 
 Visor applique quelques heuristiques simples pour mettre en avant un comportement suspect :
