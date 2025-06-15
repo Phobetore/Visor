@@ -82,6 +82,8 @@ const colorMap = {
   'public-public': '#f0f'
 };
 
+let serverPos = {lat: 0, lon: 0};
+
 // Initialize checkbox listeners
 document.querySelectorAll('#filters input[type="checkbox"]').forEach(cb => {
   filters[cb.id] = cb.checked;
@@ -112,11 +114,13 @@ function drawConnection(pkt) {
   const pairKey = `${pkt.src}->${pkt.dst}`;
   if (seenPairs.has(pairKey)) return;
   seenPairs.add(pairKey);
+  const srcCoords = isPrivate(pkt.src) ? [serverPos.lon, serverPos.lat] : [pkt.src_lon, pkt.src_lat];
+  const dstCoords = isPrivate(pkt.dst) ? [serverPos.lon, serverPos.lat] : [pkt.dst_lon, pkt.dst_lat];
   const feature = {
     type: 'LineString',
     coordinates: [
-      [pkt.src_lon, pkt.src_lat],
-      [pkt.dst_lon, pkt.dst_lat]
+      srcCoords,
+      dstCoords
     ]
   };
   let color = '#f0f';
@@ -278,6 +282,9 @@ function addAnomaly(text) {
 const ws = new WebSocket(`ws://${location.host}/ws`);
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
+  if (data.server_location) {
+    serverPos = data.server_location;
+  }
   (data.packets || []).forEach(pkt => {
     drawConnection(pkt);
     updateConnection(pkt);
