@@ -31,8 +31,41 @@ d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(w
     .attr('stroke', '#555');
 });
 
+// Traffic filter state
+const filters = {
+  'private-private': true,
+  'private-public': true,
+  'public-private': true,
+  'public-public': true
+};
+
+// Initialize checkbox listeners
+document.querySelectorAll('#filters input[type="checkbox"]').forEach(cb => {
+  filters[cb.id] = cb.checked;
+  cb.addEventListener('change', () => {
+    filters[cb.id] = cb.checked;
+  });
+});
+
+function isPrivate(ip) {
+  return /^10\./.test(ip) ||
+         /^192\.168\./.test(ip) ||
+         /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(ip);
+}
+
+function trafficType(pkt) {
+  const srcPriv = isPrivate(pkt.src);
+  const dstPriv = isPrivate(pkt.dst);
+  if (srcPriv && dstPriv) return 'private-private';
+  if (srcPriv && !dstPriv) return 'private-public';
+  if (!srcPriv && dstPriv) return 'public-private';
+  return 'public-public';
+}
+
 function drawConnection(pkt) {
   if (pkt.src_lat == null || pkt.dst_lat == null) return;
+  const type = trafficType(pkt);
+  if (!filters[type]) return;
   const feature = {
     type: 'LineString',
     coordinates: [
