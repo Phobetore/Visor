@@ -45,6 +45,10 @@ h1 {
     background-color: #000;
 }
 
+#graph line, #graph circle {
+    vector-effect: non-scaling-stroke;
+}
+
 #sidebar {
     height: 100%;
     margin-left: 20px;
