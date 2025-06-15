@@ -6,6 +6,13 @@ const svg = d3.select('#map').append('svg')
   .attr('width', '100%')
   .attr('height', '100%');
 
+// group used for zoom/pan transformations
+const zoomGroup = svg.append('g');
+// layer for the world map
+const mapLayer = zoomGroup.append('g');
+// layer for drawing connection lines above the map
+const linesGroup = zoomGroup.append('g');
+
 const graphContainer = document.getElementById('graph');
 const gwidth = graphContainer.clientWidth || 400;
 const gheight = graphContainer.clientHeight || 500;
@@ -13,7 +20,8 @@ const gsvg = d3.select('#graph').append('svg')
   .attr('width', '100%')
   .attr('height', '100%');
 
-const projection = d3.geoMercator().scale(130).translate([width / 2, height / 1.5]);
+const projection = d3.geoMercator();
+projection.fitSize([width, height], {type: 'Sphere'});
 const path = d3.geoPath().projection(projection);
 
 svg.append('defs').append('marker')
@@ -28,7 +36,14 @@ svg.append('defs').append('marker')
   .attr('d', 'M0,-5L10,0L0,5')
   .attr('fill', '#f0f');
 
-const linesGroup = svg.append('g');
+// enable zoom and pan on the map
+const zoom = d3.zoom()
+  .scaleExtent([1, 8])
+  .on('zoom', (event) => {
+    zoomGroup.attr('transform', event.transform);
+  });
+svg.call(zoom);
+
 // Track drawn connections to avoid rendering duplicates simultaneously
 const seenPairs = new Set();
 const connectionTableBody = document.querySelector('#connections tbody');
@@ -45,7 +60,7 @@ const simulation = d3.forceSimulation()
 
 d3.json('/static/js/countries-110m.json').then(world => {
   const countries = topojson.feature(world, world.objects.countries);
-  svg.append('path')
+  mapLayer.append('path')
     .datum(countries)
     .attr('d', path)
     .attr('fill', '#111')
