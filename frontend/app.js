@@ -23,6 +23,14 @@ const gsvg = d3.select('#graph').append('svg')
   .attr('width', '100%')
   .attr('height', '100%');
 
+const sidebarEl = document.getElementById('sidebar');
+const toggleSidebarBtn = document.getElementById('toggleSidebar');
+if (toggleSidebarBtn) {
+  toggleSidebarBtn.addEventListener('click', () => {
+    sidebarEl.classList.toggle('collapsed');
+  });
+}
+
 const projection = d3.geoMercator();
 projection.fitSize([width, height], {type: 'Sphere'});
 const path = d3.geoPath().projection(projection);
@@ -78,13 +86,19 @@ const filters = {
 };
 
 const colorMap = {
-  'local-local': 'green',
-  'local-public': 'blue',
-  'public-local': 'red',
+  'local-local': '#0f0',
+  'local-public': '#2af',
+  'public-local': '#f44',
   'public-public': '#f0f'
 };
 
 let serverPos = {lat: 0, lon: 0};
+
+function highlightNode(ip, on) {
+  nodeGroup.selectAll('circle')
+    .filter(d => d.id === ip)
+    .classed('highlight', on);
+}
 
 // Initialize checkbox listeners
 document.querySelectorAll('#filters input[type="checkbox"]').forEach(cb => {
@@ -264,6 +278,16 @@ function updateConnection(pkt) {
     const tr = document.createElement('tr');
     tr.innerHTML = rowHtml;
     tr.style.color = colorMap[pkt.type] || '#f0f';
+    tr.dataset.src = pkt.src;
+    tr.dataset.dst = pkt.dst;
+    tr.addEventListener('mouseenter', () => {
+      highlightNode(tr.dataset.src, true);
+      highlightNode(tr.dataset.dst, true);
+    });
+    tr.addEventListener('mouseleave', () => {
+      highlightNode(tr.dataset.src, false);
+      highlightNode(tr.dataset.dst, false);
+    });
     connectionTableBody.appendChild(tr);
     while (connectionTableBody.rows.length > MAX_TABLE_ROWS) {
       connectionTableBody.deleteRow(0);
@@ -273,6 +297,8 @@ function updateConnection(pkt) {
   } else {
     rec.tr.innerHTML = rowHtml;
     rec.tr.style.color = colorMap[pkt.type] || '#f0f';
+    rec.tr.dataset.src = pkt.src;
+    rec.tr.dataset.dst = pkt.dst;
   }
   rec.timestamp = now;
 }

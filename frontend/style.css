@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600;700&display=swap');
 
 body {
     background-color: #0d0d0d;
-    color: #0ff;
-    font-family: 'Orbitron', sans-serif;
+    color: #2af;
+    font-family: 'Inter', sans-serif;
     margin: 0;
     padding: 0;
     height: 100vh;
@@ -14,7 +14,27 @@ body {
 h1 {
     text-align: center;
     margin-bottom: 20px;
-    text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+    font-family: 'Orbitron', sans-serif;
+    text-shadow: 0 0 10px #2af, 0 0 20px #2af;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: #111;
+    color: #2af;
+    box-shadow: 0 0 5px #2af;
+}
+
+#toggleSidebar {
+    background: none;
+    border: 1px solid #2af;
+    color: #2af;
+    padding: 4px 8px;
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer;
 }
 
 #container {
@@ -50,14 +70,30 @@ h1 {
 }
 
 #sidebar {
+    width: 260px;
     height: 100%;
     margin-left: 20px;
     padding: 10px;
     box-sizing: border-box;
     border: 1px solid #333;
     background: rgba(0, 0, 0, 0.5);
-    color: #0ff;
+    color: #2af;
     overflow-y: auto;
+    transition: transform 0.3s ease;
+}
+
+#sidebar.collapsed {
+    transform: translateX(100%);
+}
+
+#filters label {
+    display: inline-block;
+    margin-bottom: 6px;
+    cursor: pointer;
+}
+
+#filters input {
+    margin-right: 6px;
 }
 
 #sidebar pre {
@@ -77,6 +113,10 @@ h1 {
     text-align: left;
 }
 
+#connections tr:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
 .flag {
     width: 16px;
     height: 12px;
@@ -91,7 +131,7 @@ line {
 }
 
 circle {
-    fill: #0ff;
+    fill: #2af;
     stroke: #000;
     stroke-width: 0.5px;
 }
@@ -101,7 +141,7 @@ circle.private {
 }
 
 text.label {
-    fill: #0ff;
+    fill: #2af;
     font-size: 12px;
     pointer-events: none;
     text-shadow: 0 0 2px #000;
@@ -113,4 +153,25 @@ path.connection {
     fill: none;
     stroke-linecap: round;
     transition: opacity 1s ease-out;
+}
+
+circle.highlight {
+    stroke: #fff;
+    stroke-width: 3px;
+}
+
+@media (max-width: 800px) {
+    #container {
+        flex-direction: column;
+    }
+    #map, #graph {
+        flex: none;
+        height: 300px;
+        margin: 0 0 20px 0;
+    }
+    #sidebar {
+        width: 100%;
+        margin-left: 0;
+        height: auto;
+    }
 }
