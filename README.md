@@ -78,12 +78,14 @@ explorer plus facilement les relations entre machines.
 
 ### 🔍 Règles de détection d’anomalies
 
-Visor applique quelques heuristiques simples pour mettre en avant un comportement suspect :
+Visor s'appuie désormais sur un moteur de règles extensible. Par défaut, quelques heuristiques sont fournies :
 
-- trafic important provenant d’une même IP source (>50 paquets observés) ;
-- pic soudain de destinations différentes pour une même source ;
-- scan répété de ports sur une cible ;
+- trafic important provenant d’une même IP source (>50 paquets observés) ;
+- pic soudain de destinations différentes pour une même source ;
+- scan répété de ports sur une cible ;
 - protocoles inhabituels (autres que TCP/UDP/ICMP).
+
+La communauté peut facilement ajouter de nouvelles règles en implémentant des classes héritant de `AnomalyRule` dans le dossier `backend`. Il suffit ensuite de les enregistrer dans `AnomalyDetector` pour qu'elles soient prises en compte.
 
 ---
 
