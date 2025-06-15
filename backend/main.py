@@ -7,6 +7,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, FileResponse
 from contextlib import asynccontextmanager
 
+from .host import get_public_ip
+
 from .capture import PacketCapture
 from .geo import async_geolocate_ip
 from . import geo
@@ -14,9 +16,24 @@ from . import geo
 capture = PacketCapture()
 
 
+server_geolocation: tuple[float | None, float | None, str | None, str | None] = (
+    None,
+    None,
+    None,
+    None,
+)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     capture.start()
+    global server_geolocation
+    try:
+        ip = await get_public_ip()
+        if ip:
+            server_geolocation = await async_geolocate_ip(ip)
+    except Exception:
+        pass
     try:
         yield
     finally:
@@ -62,6 +79,7 @@ def get_packets():
 async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
     last = 0
+    first_message = True
     try:
         while True:
             await asyncio.sleep(1)
@@ -78,6 +96,10 @@ async def websocket_endpoint(ws: WebSocket):
                 proto = pkt.get("proto")
                 slat, slon, scountry, scc = await async_geolocate_ip(src)
                 dlat, dlon, dcountry, dcc = await async_geolocate_ip(dst)
+                if is_local_ip(src) and server_geolocation[0] is not None:
+                    slat, slon = server_geolocation[0], server_geolocation[1]
+                if is_local_ip(dst) and server_geolocation[0] is not None:
+                    dlat, dlon = server_geolocation[0], server_geolocation[1]
 
                 if is_local_ip(src) and is_local_ip(dst):
                     conn_type = "local-local"
@@ -132,7 +154,14 @@ async def websocket_endpoint(ws: WebSocket):
                     anomalies.append(f"Spike in unique destinations from {src}")
                     dest_spike_reported.add(src)
                 dest_prev_counts[src] = current
-            if enriched or anomalies:
-                await ws.send_json({"packets": enriched, "anomalies": anomalies})
+            if enriched or anomalies or first_message:
+                message = {"packets": enriched, "anomalies": anomalies}
+                if first_message:
+                    message["server_location"] = {
+                        "lat": server_geolocation[0],
+                        "lon": server_geolocation[1],
+                    }
+                    first_message = False
+                await ws.send_json(message)
     except WebSocketDisconnect:
         pass
