@@ -2,13 +2,12 @@ import asyncio
 from collections import defaultdict
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from ipaddress import ip_address
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, FileResponse
 from contextlib import asynccontextmanager
 
 from .capture import PacketCapture
-from .geo import async_geolocate_ip
+from .geo import async_geolocate_ip, is_local_ip
 from . import geo
 
 capture = PacketCapture()
@@ -39,17 +38,6 @@ port_scan_tracker = defaultdict(lambda: defaultdict(set))
 reported_port_scans = set()
 reported_unusual_protos = set()
 reported_anomalies = set()
-
-
-def is_local_ip(ip: str) -> bool:
-    """Return True if the IP address is private or loopback."""
-    try:
-        ip_obj = ip_address(ip)
-        return ip_obj.is_private or ip_obj.is_loopback
-    except ValueError:
-        return False
-
-
 
 
 @app.get("/packets")
