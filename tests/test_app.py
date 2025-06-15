@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fastapi.testclient import TestClient
 from backend import main
+from backend import geo
 
 class DummyCapture:
     def __init__(self):
@@ -87,7 +88,7 @@ def test_port_scan_detection(monkeypatch):
     monkeypatch.setattr(main, "reported_port_scans", set())
     monkeypatch.setattr(main, "reported_unusual_protos", set())
     monkeypatch.setattr(main, "reported_anomalies", set())
-    monkeypatch.setattr(geo, "geolocate_ip", lambda ip: (0, 0, ""))
+    monkeypatch.setattr(geo, "async_geolocate_ip", lambda ip: (0, 0, ""))
     with TestClient(main.app) as client:
         with client.websocket_connect("/ws") as websocket:
             data = websocket.receive_json()
@@ -107,7 +108,9 @@ def test_get_packets(monkeypatch):
 def test_websocket_geolocation_and_anomaly(monkeypatch):
     dummy = DummyCapture()
     monkeypatch.setattr(main, "capture", dummy)
-    monkeypatch.setattr(main, "geolocate_ip", lambda ip: (1.0, 2.0, "XX"))
+    async def dummy_geo_loc(ip):
+        return (1.0, 2.0, "XX")
+    monkeypatch.setattr(main, "async_geolocate_ip", dummy_geo_loc)
     monkeypatch.setattr(main, "traffic_count", defaultdict(int, {"1.1.1.1": 50}))
     monkeypatch.setattr(main, "reported_anomalies", set())
 
