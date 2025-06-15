@@ -14,6 +14,10 @@ h1 {
     text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
 }
 
+#graph {
+    display: inline-block;
+}
+
 #graph svg {
     width: 800px;
     height: 600px;
@@ -21,13 +25,43 @@ h1 {
     background-color: #000;
 }
 
+#info {
+    display: inline-block;
+    vertical-align: top;
+    width: 300px;
+    height: 600px;
+    margin-left: 20px;
+    padding: 10px;
+    border: 1px solid #333;
+    background: rgba(0, 0, 0, 0.5);
+    color: #0ff;
+    overflow-y: auto;
+}
+
+#info pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
 line {
     stroke: #f0f;
     stroke-opacity: 0.6;
+    marker-end: url(#arrow);
 }
 
 circle {
     fill: #0ff;
     stroke: #000;
     stroke-width: 0.5px;
+}
+
+circle.private {
+    fill: #0f0;
+}
+
+text.label {
+    fill: #0ff;
+    font-size: 10px;
+    pointer-events: none;
+    text-shadow: 0 0 2px #000;
 }
