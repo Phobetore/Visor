@@ -269,9 +269,9 @@ function updateConnection(pkt) {
   const now = Date.now();
   let rec = activeConnections.get(key);
   const rowHtml = (
-    `<td><img class="flag" src="https://flagcdn.com/16x12/${(pkt.src_country_code||'').toLowerCase()}.png"> ${pkt.src}</td>`+
+    `<td><img class="flag" alt="${pkt.src_country_code || ''}" src="https://flagcdn.com/16x12/${(pkt.src_country_code||'').toLowerCase()}.png"> ${pkt.src}</td>`+
     `<td>→</td>`+
-    `<td><img class="flag" src="https://flagcdn.com/16x12/${(pkt.dst_country_code||'').toLowerCase()}.png"> ${pkt.dst}</td>`+
+    `<td><img class="flag" alt="${pkt.dst_country_code || ''}" src="https://flagcdn.com/16x12/${(pkt.dst_country_code||'').toLowerCase()}.png"> ${pkt.dst}</td>`+
     `<td>${pkt.proto}</td>`
   );
   if (!rec) {
