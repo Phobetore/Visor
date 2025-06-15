@@ -22,7 +22,7 @@ svg.append('defs').append('marker')
 
 const linesGroup = svg.append('g');
 
-d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(world => {
+d3.json('/static/js/countries-110m.json').then(world => {
   const countries = topojson.feature(world, world.objects.countries);
   svg.append('path')
     .datum(countries)

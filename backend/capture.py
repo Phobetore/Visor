@@ -18,13 +18,21 @@ class PacketCapture:
             self.packets.append(packet)
 
     def _sniff(self):
-        sniff(
-            iface=self.iface,
-            prn=self._append_packet,
-            count=self.count,
-            stop_filter=lambda _: self._stop_event.is_set(),
-            store=False,
-        )
+        """Continuously sniff packets checking for stop events regularly."""
+        while not self._stop_event.is_set():
+            with self._lock:
+                captured = len(self.packets)
+            remaining = self.count - captured if self.count else 0
+            if self.count and remaining <= 0:
+                break
+            sniff(
+                iface=self.iface,
+                prn=self._append_packet,
+                count=remaining,
+                stop_filter=lambda _: self._stop_event.is_set(),
+                timeout=1,
+                store=False,
+            )
 
     def start(self):
         if self.thread and self.thread.is_alive():

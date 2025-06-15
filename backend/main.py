@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, FileResponse
 
 from .capture import PacketCapture
-from .geo import geolocate_ip
+from .geo import async_geolocate_ip
 
 app = FastAPI(title="Visor")
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
