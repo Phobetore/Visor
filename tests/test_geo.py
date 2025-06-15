@@ -1,6 +1,9 @@
+from pathlib import Path
+import sys
 import pytest
 import httpx
 import asyncio
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from backend.geo import async_geolocate_ip
 
 

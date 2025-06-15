@@ -84,8 +84,21 @@ Visor s'appuie désormais sur un moteur de règles extensible. Par défaut, quel
 - pic soudain de destinations différentes pour une même source ;
 - scan répété de ports sur une cible ;
 - protocoles inhabituels (autres que TCP/UDP/ICMP).
+- accumulation de sources variées vers une même destination (détection DDoS).
 
 La communauté peut facilement ajouter de nouvelles règles en implémentant des classes héritant de `AnomalyRule` dans le dossier `backend`. Il suffit ensuite de les enregistrer dans `AnomalyDetector` pour qu'elles soient prises en compte.
+
+Les seuils des règles peuvent être ajustés et certaines règles désactivées en créant un fichier `anomaly_config.json`. Celui-ci sera chargé au démarrage si la variable d'environnement `ANOMALY_CONFIG` est définie ou s'il est placé à la racine du projet. Exemple :
+
+```json
+{
+  "rules": {
+    "HighTrafficRule": {"threshold": 100},
+    "PortScanRule": false
+  }
+}
+```
+
 
 ---
 

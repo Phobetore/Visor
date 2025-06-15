@@ -1,6 +1,7 @@
 import asyncio
 
-from .anomaly import AnomalyDetector
+from .anomaly import AnomalyDetector, create_detector_from_config
+from .config import load_anomaly_config
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
@@ -14,7 +15,8 @@ from .geo import async_geolocate_ip, is_local_ip
 from . import geo
 
 capture = PacketCapture()
-detector = AnomalyDetector()
+_config = load_anomaly_config()
+detector = create_detector_from_config(_config)
 
 
 server_geolocation: tuple[float | None, float | None, str | None, str | None] = (

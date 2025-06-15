@@ -1,6 +1,7 @@
 
 from pathlib import Path
 import sys
+import json
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fastapi.testclient import TestClient
@@ -137,3 +138,21 @@ def test_packet_capture_stop(monkeypatch):
     cap.stop()
     assert cap.thread is None
     assert not cap._stop_event.is_set()
+
+
+def test_anomaly_detector_config(monkeypatch, tmp_path):
+    cfg = {
+        "rules": {
+            "HighTrafficRule": {"threshold": 2},
+            "PortScanRule": False,
+        }
+    }
+    path = tmp_path / "cfg.json"
+    path.write_text(json.dumps(cfg))
+    monkeypatch.setenv("ANOMALY_CONFIG", str(path))
+    from backend.config import load_anomaly_config
+    from backend.anomaly import create_detector_from_config, HighTrafficRule
+    config = load_anomaly_config()
+    det = create_detector_from_config(config)
+    ht = next(r for r in det.rules if isinstance(r, HighTrafficRule))
+    assert ht.threshold == 2
