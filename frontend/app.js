@@ -54,7 +54,16 @@ function update() {
   nodeEnter.select('circle')
     .attr('class', d => d.type === 'private' ? 'private' : null)
     .attr('fill', d => d.type === 'private' ? '#0f0' : '#0ff');
-  nodeEnter.selectAll('title').data(d => [d]).join('title').text(d => d.id);
+  nodeEnter.selectAll('title')
+    .data(d => [d])
+    .join('title')
+    .text(d => {
+      const outgoing = links.filter(l => l.source.id === d.id)
+                            .reduce((n, l) => n + l.count, 0);
+      const incoming = links.filter(l => l.target.id === d.id)
+                            .reduce((n, l) => n + l.count, 0);
+      return `${d.id}\nOut: ${outgoing}\nIn: ${incoming}`;
+    });
 
   simulation.nodes(dataNodes).on('tick', ticked);
   simulation.force('link').links(links);
