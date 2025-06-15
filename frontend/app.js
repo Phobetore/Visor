@@ -21,6 +21,7 @@ svg.append('defs').append('marker')
   .attr('fill', '#f0f');
 
 const linesGroup = svg.append('g');
+const seenPairs = new Set();
 
 d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(world => {
   const countries = topojson.feature(world, world.objects.countries);
@@ -63,7 +64,11 @@ const ws = new WebSocket(`ws://${location.host}/ws`);
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   (data.packets || []).forEach(pkt => {
-    drawConnection(pkt);
+    const key = `${pkt.src}-${pkt.dst}`;
+    if (!seenPairs.has(key)) {
+      drawConnection(pkt);
+      seenPairs.add(key);
+    }
     addLog(`${pkt.src} -> ${pkt.dst}`);
   });
   (data.anomalies || []).forEach(a => addAnomaly(a));
