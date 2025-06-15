@@ -40,10 +40,16 @@ function drawConnection(pkt) {
       [pkt.dst_lon, pkt.dst_lat]
     ]
   };
+  let color = '#f0f';
+  if (pkt.type === 'local-local') color = 'green';
+  else if (pkt.type === 'local-public') color = 'blue';
+  else if (pkt.type === 'public-local') color = 'red';
+
   linesGroup.append('path')
     .datum(feature)
     .attr('d', path)
-    .attr('class', 'connection');
+    .attr('class', 'connection')
+    .attr('stroke', color);
 }
 
 const logsEl = document.getElementById('logs');

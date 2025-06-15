@@ -37,4 +37,5 @@ def test_websocket_close(monkeypatch):
             data = websocket.receive_json()
             assert "packets" in data
             assert data["packets"][0]["src"] == "1.1.1.1"
+            assert "type" in data["packets"][0]
             websocket.close()
