@@ -79,8 +79,8 @@ capture quelques instants et observez l’évolution du réseau !
 | 🔧 Phase 2 | API REST (FastAPI) exposant les flux | ✔️ |
 | 🔧 Phase 3 | Frontend minimal affichant les connexions | ✔️ |
 | 🔧 Phase 4 | Visualisation dynamique (D3.js) | ✔️ |
-| 🔧 Phase 5 | Détection d’anomalies réseau basiques | 🔜 |
-| 🌐 Phase 6 | Géolocalisation des IP et affichage sur carte | 🔜 |
+| 🔧 Phase 5 | Détection d’anomalies réseau basiques | ✔️ |
+| 🌐 Phase 6 | Géolocalisation des IP et affichage sur carte | ✔️ |
 | 📦 Phase 7 | Export JSON / PNG / GIF des sessions | 🔜 |
 
 ---
