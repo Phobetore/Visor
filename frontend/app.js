@@ -333,17 +333,27 @@ function addAnomaly(text) {
   anomaliesEl.scrollTop = anomaliesEl.scrollHeight;
 }
 
-const wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
-const ws = new WebSocket(`${wsProto}://${location.host}/ws`);
-ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  if (data.server_location) {
-    serverPos = data.server_location;
-  }
-  (data.packets || []).forEach(pkt => {
-    drawConnection(pkt);
-    updateConnection(pkt);
-    updateGraph(pkt);
-  });
-  (data.anomalies || []).forEach(a => addAnomaly(a));
-};
+let ws;
+function connectWs() {
+  const wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${wsProto}://${location.host}/ws`);
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.server_location) {
+      serverPos = data.server_location;
+    }
+    (data.packets || []).forEach(pkt => {
+      drawConnection(pkt);
+      updateConnection(pkt);
+      updateGraph(pkt);
+    });
+    (data.anomalies || []).forEach(a => addAnomaly(a));
+  };
+  ws.onclose = () => {
+    setTimeout(connectWs, 1000);
+  };
+  ws.onerror = () => {
+    try { ws.close(); } catch (e) {}
+  };
+}
+connectWs();
