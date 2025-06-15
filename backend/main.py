@@ -43,7 +43,7 @@ def shutdown_event():
 
 @app.get("/packets")
 def get_packets():
-    """Return all captured connections as src/dst dicts."""
+    """Return all captured connections with port and protocol info."""
     return JSONResponse(capture.get_connections())
 
 
@@ -61,6 +61,9 @@ async def websocket_endpoint(ws: WebSocket):
             for pkt in new_packets:
                 src = pkt.get("src")
                 dst = pkt.get("dst")
+                src_port = pkt.get("src_port")
+                dst_port = pkt.get("dst_port")
+                proto = pkt.get("proto")
                 slat, slon, _ = geolocate_ip(src)
                 dlat, dlon, _ = geolocate_ip(dst)
 
@@ -76,6 +79,9 @@ async def websocket_endpoint(ws: WebSocket):
                 info = {
                     "src": src,
                     "dst": dst,
+                    "src_port": src_port,
+                    "dst_port": dst_port,
+                    "proto": proto,
                     "src_lat": slat,
                     "src_lon": slon,
                     "dst_lat": dlat,

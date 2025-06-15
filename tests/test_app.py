@@ -10,7 +10,13 @@ from backend import main
 
 class DummyCapture:
     def __init__(self):
-        self.packets = [{"src": "1.1.1.1", "dst": "2.2.2.2"}]
+        self.packets = [{
+            "src": "1.1.1.1",
+            "dst": "2.2.2.2",
+            "src_port": 1111,
+            "dst_port": 2222,
+            "proto": "TCP",
+        }]
         self.size = len(self.packets)
 
     def start(self):
@@ -38,6 +44,10 @@ def test_websocket_close(monkeypatch):
         with client.websocket_connect("/ws") as websocket:
             data = websocket.receive_json()
             assert "packets" in data
-            assert data["packets"][0]["src"] == "1.1.1.1"
-            assert "type" in data["packets"][0]
+            pkt = data["packets"][0]
+            assert pkt["src"] == "1.1.1.1"
+            assert pkt["dst"] == "2.2.2.2"
+            assert pkt["src_port"] == 1111
+            assert pkt["dst_port"] == 2222
+            assert pkt["proto"] == "TCP"
             websocket.close()

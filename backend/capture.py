@@ -1,4 +1,4 @@
-from scapy.all import sniff, Packet, IP
+from scapy.all import sniff, Packet, IP, TCP, UDP
 from threading import Thread, Event, Lock
 
 from typing import List
@@ -16,6 +16,45 @@ class PacketCapture:
     def _append_packet(self, packet: Packet):
         with self._lock:
             self.packets.append(packet)
+
+    def _packet_info(self, packet: Packet) -> dict | None:
+        """Extract connection info from a packet."""
+        if IP not in packet:
+            return None
+        ip_layer = packet[IP]
+        proto = None
+        src_port = None
+        dst_port = None
+        if TCP in packet:
+            tcp = packet[TCP]
+            src_port = tcp.sport
+            dst_port = tcp.dport
+            proto = "TCP"
+        elif UDP in packet:
+            udp = packet[UDP]
+            src_port = udp.sport
+            dst_port = udp.dport
+            proto = "UDP"
+        else:
+            proto = packet.lastlayer().name
+        return {
+            "src": ip_layer.src,
+            "dst": ip_layer.dst,
+            "src_port": src_port,
+            "dst_port": dst_port,
+            "proto": proto,
+        }
+
+    def _format_summary(self, packet: Packet) -> str:
+        info = self._packet_info(packet)
+        if not info:
+            return packet.summary()
+        proto = info["proto"]
+        src = info["src"]
+        dst = info["dst"]
+        if info["src_port"] is not None and info["dst_port"] is not None:
+            return f"{proto} {src}:{info['src_port']} -> {dst}:{info['dst_port']}"
+        return f"{proto} {src} -> {dst}"
 
     def _sniff(self):
         """Continuously sniff packets checking for stop events regularly."""
@@ -49,31 +88,31 @@ class PacketCapture:
 
     def get_summary(self) -> List[str]:
         with self._lock:
-            return [p.summary() for p in self.packets]
+            return [self._format_summary(p) for p in self.packets]
 
     def get_summary_since(self, index: int) -> List[str]:
         """Return packet summaries starting from a given index."""
         with self._lock:
-            return [p.summary() for p in self.packets[index:]]
+            return [self._format_summary(p) for p in self.packets[index:]]
 
     def get_connections(self) -> List[dict]:
-        """Return a list of dicts with src and dst for IP packets."""
+        """Return a list of connection dicts for IP packets."""
         connections = []
         with self._lock:
             for p in self.packets:
-                if IP in p:
-                    ip_layer = p[IP]
-                    connections.append({"src": ip_layer.src, "dst": ip_layer.dst})
+                info = self._packet_info(p)
+                if info:
+                    connections.append(info)
             return connections
 
     def get_connections_since(self, index: int) -> List[dict]:
-        """Return src/dst dictionaries for packets since index."""
+        """Return connection dictionaries for packets since index."""
         connections = []
         with self._lock:
             for p in self.packets[index:]:
-                if IP in p:
-                    ip_layer = p[IP]
-                    connections.append({"src": ip_layer.src, "dst": ip_layer.dst})
+                info = self._packet_info(p)
+                if info:
+                    connections.append(info)
             return connections
 
     @property
