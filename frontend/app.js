@@ -37,6 +37,9 @@ svg.call(zoom);
 
 // Track drawn connections to avoid rendering duplicates simultaneously
 const seenPairs = new Set();
+// Maintain queues of animations per normalized host pair to play request
+// and response in sequence
+const animationQueues = new Map();
 const connectionTableBody = document.querySelector('#connections tbody');
 const activeConnections = new Map();
 const graphNodes = new Map();
@@ -106,6 +109,34 @@ function trafficType(pkt) {
   return 'public-public';
 }
 
+function animateLine(feature, color, pairKey) {
+  return new Promise(resolve => {
+    const line = linesGroup.append('path')
+      .datum(feature)
+      .attr('d', path)
+      .attr('class', 'connection')
+      .attr('stroke', color)
+      .attr('opacity', 1);
+
+    const length = line.node().getTotalLength();
+    line
+      .attr('stroke-dasharray', `${length} ${length}`)
+      .attr('stroke-dashoffset', length)
+      .transition()
+      .duration(1000)
+      .attr('stroke-dashoffset', 0)
+      .transition()
+      .duration(5000)
+      .attr('stroke-dashoffset', -length)
+      .attr('opacity', 0)
+      .on('end', function() {
+        d3.select(this).remove();
+        seenPairs.delete(pairKey);
+        resolve();
+      });
+  });
+}
+
 function drawConnection(pkt) {
   if (pkt.src_lat == null || pkt.dst_lat == null) return;
   const type = trafficType(pkt);
@@ -117,38 +148,16 @@ function drawConnection(pkt) {
   const dstCoords = isPrivate(pkt.dst) ? [serverPos.lon, serverPos.lat] : [pkt.dst_lon, pkt.dst_lat];
   const feature = {
     type: 'LineString',
-    coordinates: [
-      srcCoords,
-      dstCoords
-    ]
+    coordinates: [srcCoords, dstCoords]
   };
   let color = '#f0f';
   if (pkt.type === 'local-local') color = 'green';
   else if (pkt.type === 'local-public') color = 'blue';
   else if (pkt.type === 'public-local') color = 'red';
 
-  const line = linesGroup.append('path')
-    .datum(feature)
-    .attr('d', path)
-    .attr('class', 'connection')
-    .attr('stroke', color)
-    .attr('opacity', 1);
-
-  const length = line.node().getTotalLength();
-  line
-    .attr('stroke-dasharray', `${length} ${length}`)
-    .attr('stroke-dashoffset', length)
-    .transition()
-    .duration(1000)
-    .attr('stroke-dashoffset', 0)
-    .transition()
-    .duration(5000)
-    .attr('stroke-dashoffset', -length)
-    .attr('opacity', 0)
-    .on('end', function() {
-      d3.select(this).remove();
-      seenPairs.delete(pairKey);
-    });
+  const normKey = [pkt.src, pkt.dst].sort().join('->');
+  const queue = animationQueues.get(normKey) || Promise.resolve();
+  animationQueues.set(normKey, queue.then(() => animateLine(feature, color, pairKey)));
 }
 
 const anomaliesEl = document.getElementById('anomalies');
