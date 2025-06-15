@@ -7,12 +7,15 @@
 </head>
 <body>
     <h1>VISOR</h1>
-    <div id="graph"></div>
-    <div id="info">
-        <h2>Détails du noeud</h2>
-        <pre id="nodeInfo">Cliquez sur un noeud</pre>
+    <div id="map"></div>
+    <div id="sidebar">
+        <h2>Logs</h2>
+        <pre id="logs"></pre>
+        <h2>Anomalies</h2>
+        <pre id="anomalies"></pre>
     </div>
     <script src="/static/js/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
     <script src="/static/app.js"></script>
 </body>
 </html>

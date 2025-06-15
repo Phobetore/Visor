@@ -1,10 +1,12 @@
 import asyncio
+from collections import defaultdict
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, FileResponse
 
 from .capture import PacketCapture
+from .geo import geolocate_ip
 
 app = FastAPI(title="Visor")
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
@@ -15,6 +17,8 @@ def read_index():
     return FileResponse("frontend/index.html")
 
 capture = PacketCapture()
+traffic_count = defaultdict(int)
+reported_anomalies = set()
 
 
 @app.on_event("startup")
@@ -42,7 +46,27 @@ async def websocket_endpoint(ws: WebSocket):
             await asyncio.sleep(1)
             new_packets = capture.get_connections_since(last)
             last = capture.size
-            if new_packets:
-                await ws.send_json(new_packets)
+            enriched = []
+            anomalies = []
+            for pkt in new_packets:
+                src = pkt.get("src")
+                dst = pkt.get("dst")
+                slat, slon, _ = geolocate_ip(src)
+                dlat, dlon, _ = geolocate_ip(dst)
+                info = {
+                    "src": src,
+                    "dst": dst,
+                    "src_lat": slat,
+                    "src_lon": slon,
+                    "dst_lat": dlat,
+                    "dst_lon": dlon,
+                }
+                traffic_count[src] += 1
+                if traffic_count[src] > 50 and src not in reported_anomalies:
+                    anomalies.append(f"High traffic from {src}")
+                    reported_anomalies.add(src)
+                enriched.append(info)
+            if enriched or anomalies:
+                await ws.send_json({"packets": enriched, "anomalies": anomalies})
     except WebSocketDisconnect:
         pass
