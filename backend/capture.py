@@ -1,14 +1,16 @@
 from scapy.all import sniff, Packet, IP, TCP, UDP, ICMP
 from threading import Thread, Event, Lock
+from collections import deque
 
 from typing import List
 
 
 class PacketCapture:
-    def __init__(self, iface: str = None, count: int = 0):
+    def __init__(self, iface: str = None, count: int = 0, max_packets: int = 10000):
         self.iface = iface
         self.count = count
-        self.packets: List[Packet] = []
+        self.max_packets = max_packets
+        self.packets: deque[Packet] = deque(maxlen=max_packets)
         self._lock = Lock()
         self._stop_event = Event()
         self.thread: Thread | None = None
@@ -93,7 +95,7 @@ class PacketCapture:
     def get_summary_since(self, index: int) -> List[str]:
         """Return packet summaries starting from a given index."""
         with self._lock:
-            return [self._format_summary(p) for p in self.packets[index:]]
+            return [self._format_summary(p) for p in list(self.packets)[index:]]
 
     def _extract_conn(self, packet: Packet) -> dict:
         """Extract connection information from a packet."""
@@ -135,7 +137,7 @@ class PacketCapture:
         """Return connection dictionaries for packets since index."""
         connections = []
         with self._lock:
-            for p in self.packets[index:]:
+            for p in list(self.packets)[index:]:
                 info = self._packet_info(p)
                 if info:
                     connections.append(info)
