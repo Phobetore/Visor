@@ -1,4 +1,4 @@
-from scapy.all import sniff, Packet, IP, TCP, UDP
+from scapy.all import sniff, Packet, IP, TCP, UDP, ICMP
 from threading import Thread, Event, Lock
 
 from typing import List
@@ -94,6 +94,32 @@ class PacketCapture:
         """Return packet summaries starting from a given index."""
         with self._lock:
             return [self._format_summary(p) for p in self.packets[index:]]
+
+    def _extract_conn(self, packet: Packet) -> dict:
+        """Extract connection information from a packet."""
+        ip_layer = packet[IP]
+        proto = None
+        sport = None
+        dport = None
+        if packet.haslayer(TCP):
+            proto = "TCP"
+            sport = packet[TCP].sport
+            dport = packet[TCP].dport
+        elif packet.haslayer(UDP):
+            proto = "UDP"
+            sport = packet[UDP].sport
+            dport = packet[UDP].dport
+        elif packet.haslayer(ICMP):
+            proto = "ICMP"
+        else:
+            proto = str(ip_layer.proto)
+        return {
+            "src": ip_layer.src,
+            "dst": ip_layer.dst,
+            "sport": sport,
+            "dport": dport,
+            "proto": proto,
+        }
 
     def get_connections(self) -> List[dict]:
         """Return a list of connection dicts for IP packets."""
