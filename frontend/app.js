@@ -39,8 +39,14 @@ const activeConnections = new Map();
 const graphNodes = new Map();
 let graphLinks = [];
 const MAX_TABLE_ROWS = 50;
-const linkGroup = gsvg.append('g');
-const nodeGroup = gsvg.append('g');
+const graphZoomGroup = gsvg.append('g');
+const linkGroup = graphZoomGroup.append('g');
+const nodeGroup = graphZoomGroup.append('g');
+
+const graphZoom = d3.zoom()
+  .scaleExtent([0.5, 5])
+  .on('zoom', e => graphZoomGroup.attr('transform', e.transform));
+gsvg.call(graphZoom);
 const simulation = d3.forceSimulation()
   .force('link', d3.forceLink().id(d => d.id).distance(60))
   .force('charge', d3.forceManyBody().strength(-100))
