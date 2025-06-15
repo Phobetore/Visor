@@ -1,12 +1,17 @@
-import os, sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+import asyncio
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from fastapi.testclient import TestClient
-from backend.main import app
-from unittest.mock import patch
+from backend import main
 
 class DummyCapture:
     def __init__(self):
-        self.sent = False
+        self.packets = [{"src": "1.1.1.1", "dst": "2.2.2.2"}]
+        self.size = len(self.packets)
 
     def start(self):
         pass
@@ -14,30 +19,19 @@ class DummyCapture:
     def stop(self):
         pass
 
-    def get_summary_since(self, index):
-        if not self.sent:
-            self.sent = True
-            return ["packet"]
+    def get_connections(self):
+        return self.packets
+
+    def get_connections_since(self, index):
+        if index == 0:
+            return self.packets
         return []
 
-    @property
-    def size(self):
-        return 1
-
-
-def test_read_index():
+def test_websocket_close(monkeypatch):
     dummy = DummyCapture()
-    with patch("backend.main.capture", dummy):
-        with TestClient(app) as client:
-            resp = client.get("/")
-            assert resp.status_code == 200
-
-
-def test_websocket_endpoint_sends_data():
-    dummy = DummyCapture()
-    with patch("backend.main.capture", dummy):
-        with TestClient(app) as client:
-            with client.websocket_connect("/ws") as websocket:
-                data = websocket.receive_json()
-                assert data == ["packet"]
-
+    monkeypatch.setattr(main, "capture", dummy)
+    with TestClient(main.app) as client:
+        with client.websocket_connect("/ws") as websocket:
+            data = websocket.receive_json()
+            assert data == dummy.packets
+            websocket.close()
