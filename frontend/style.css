@@ -124,13 +124,15 @@ header {
     margin-right: 4px;
 }
 
-line {
+#graph line,
+#map line {
     stroke: #f0f;
     stroke-opacity: 0.6;
     stroke-linecap: round;
 }
 
-circle {
+#graph circle,
+#map circle {
     fill: #2af;
     stroke: #000;
     stroke-width: 0.5px;
