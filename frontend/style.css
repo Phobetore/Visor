@@ -55,7 +55,6 @@ header {
 
 #graph {
     flex: 1;
-    margin-left: 20px;
 }
 
 #graph svg {
@@ -69,22 +68,16 @@ header {
     vector-effect: non-scaling-stroke;
 }
 
-#sidebar {
-    width: 250px;
-    height: 100%;
-    margin-left: 20px;
-    padding: 10px;
-    box-sizing: border-box;
-    border: 1px solid #333;
-    background: rgba(0, 0, 0, 0.5);
-    color: #2af;
-    overflow-y: auto;
-    transition: margin-left 0.3s ease;
+#sidebar.collapsed {
+    width: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    border: none;
+    transition: all 0.3s ease;
+    opacity: 0;
 }
 
-#sidebar.collapsed {
-    margin-left: -250px;
-}
 
 #filters label {
     display: inline-block;
@@ -162,6 +155,9 @@ circle.highlight {
     stroke-width: 3px;
 }
 
+
+
+
 @media (max-width: 800px) {
     #container {
         flex-direction: column;
@@ -179,4 +175,59 @@ circle.highlight {
     #sidebar.collapsed {
         display: none;
     }
+}
+
+
+/* Évite le scroll horizontal */
+body, html {
+    overflow-x: hidden;
+}
+
+/* Container principal qui gère la répartition */
+#container {
+    flex: 1;
+    display: flex;
+    min-width: 0;
+}
+
+/* Réglage standard de la sidebar */
+#sidebar {
+    height: 100%;
+    min-width: 250px;
+    box-sizing: border-box;
+    margin-left: 20px;
+    padding: 10px;
+    overflow-y: auto;
+    border: 1px solid #333;
+    background: rgba(0, 0, 0, 0.5);
+    color: #2af;
+    transition: all 0.3s ease;
+}
+
+/* Quand repliée */
+#sidebar.collapsed {
+    width: 0;
+    min-width: 0;
+    padding: 0;
+    margin-left: 0;
+    border: none;
+    opacity: 0;
+    overflow: hidden;
+}
+
+/* En mobile : on masque complètement */
+@media (max-width: 800px) {
+    #sidebar {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    #sidebar.collapsed {
+        display: none;
+    }
+}
+
+#sidebar.collapsed + #map,
+#sidebar.collapsed + #graph {
+    flex: 1 1 100%;
 }
