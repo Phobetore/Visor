@@ -118,19 +118,7 @@ function drawConnection(pkt) {
 
 const anomaliesEl = document.getElementById('anomalies');
 
-function updateGraph(pkt) {
-  const s = pkt.src;
-  const d = pkt.dst;
-
-  if (!graphNodes.has(s)) {
-    graphNodes.set(s, {id: s, private: isPrivate(s)});
-  }
-  if (!graphNodes.has(d)) {
-    graphNodes.set(d, {id: d, private: isPrivate(d)});
-  }
-  graphLinks.push({source: s, target: d, type: pkt.type});
-  if (graphLinks.length > 100) graphLinks.shift();
-
+function renderGraph() {
   const nodesArray = Array.from(graphNodes.values());
   const linksArray = graphLinks;
 
@@ -155,6 +143,27 @@ function updateGraph(pkt) {
   simulation.nodes(nodesArray).on('tick', ticked);
   simulation.force('link').links(linksArray);
   simulation.alpha(1).restart();
+}
+
+function updateGraph(pkt) {
+  const s = pkt.src;
+  const d = pkt.dst;
+  const now = Date.now();
+
+  if (!graphNodes.has(s)) {
+    graphNodes.set(s, {id: s, private: isPrivate(s), timestamp: now});
+  } else {
+    graphNodes.get(s).timestamp = now;
+  }
+  if (!graphNodes.has(d)) {
+    graphNodes.set(d, {id: d, private: isPrivate(d), timestamp: now});
+  } else {
+    graphNodes.get(d).timestamp = now;
+  }
+  graphLinks.push({source: s, target: d, type: pkt.type});
+  if (graphLinks.length > 100) graphLinks.shift();
+
+  renderGraph();
 }
 
 function ticked() {
@@ -217,6 +226,21 @@ setInterval(() => {
       rec.tr.remove();
       activeConnections.delete(key);
     }
+  }
+}, 5000);
+
+setInterval(() => {
+  const now = Date.now();
+  let changed = false;
+  for (const [ip, node] of graphNodes.entries()) {
+    if (now - node.timestamp > 30000) {
+      graphNodes.delete(ip);
+      graphLinks = graphLinks.filter(l => l.source !== ip && l.target !== ip);
+      changed = true;
+    }
+  }
+  if (changed) {
+    renderGraph();
   }
 }, 5000);
 
