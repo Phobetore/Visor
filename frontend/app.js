@@ -25,15 +25,17 @@ const nodeGroup = svg.append('g');
 
 const simulation = d3.forceSimulation()
   .force('link', d3.forceLink().id(d => d.id).distance(100))
-  .force('charge', d3.forceManyBody().strength(-300))
-  .force('center', d3.forceCenter(width / 2, height / 2));
+  .force('charge', d3.forceManyBody().strength(-100))
+  .force('center', d3.forceCenter(width / 2, height / 2))
+  .force('x', d3.forceX(width / 2).strength(0.05))
+  .force('y', d3.forceY(height / 2).strength(0.05));
 
 function update() {
   const dataNodes = Array.from(nodes.values());
   const linkSel = linkGroup.selectAll('line')
     .data(links)
     .join('line')
-    .attr('stroke-width', d => 1 + Math.log(d.count));
+    .attr('stroke-width', d => Math.min(5, 1 + Math.log(d.count)));
   linkSel.selectAll('title').data(d => [d]).join('title').text(d => `${d.source.id} -> ${d.target.id} (${d.count})`);
 
   const nodeEnter = nodeGroup.selectAll('g')
@@ -58,7 +60,7 @@ function update() {
 
   simulation.nodes(dataNodes).on('tick', ticked);
   simulation.force('link').links(links);
-  simulation.alpha(1).restart();
+  simulation.alpha(0.3).restart();
 }
 
 function ticked() {
