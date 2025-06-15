@@ -30,6 +30,24 @@ if (toggleSidebarBtn) {
     sidebarEl.classList.toggle('collapsed');
   });
 }
+const colorblindToggle = document.getElementById('colorblind-toggle');
+if (colorblindToggle) {
+  colorblindToggle.addEventListener('change', () => {
+    document.body.classList.toggle('colorblind', colorblindToggle.checked);
+    updateColorMap();
+  });
+}
+
+const searchInput = document.getElementById('search');
+function applySearch() {
+  const term = searchInput.value.trim();
+  connectionTableBody.querySelectorAll('tr').forEach(tr => {
+    tr.style.display = tr.textContent.includes(term) ? '' : 'none';
+  });
+}
+if (searchInput) {
+  searchInput.addEventListener('input', applySearch);
+}
 
 const projection = d3.geoMercator();
 projection.fitSize([width, height], {type: 'Sphere'});
@@ -85,12 +103,19 @@ const filters = {
   'public-public': true
 };
 
-const colorMap = {
-  'local-local': '#0f0',
-  'local-public': '#2af',
-  'public-local': '#f44',
-  'public-public': '#f0f'
-};
+let colorMap = {};
+
+function updateColorMap() {
+  const styles = getComputedStyle(document.body);
+  colorMap = {
+    'local-local': styles.getPropertyValue('--color-local-local').trim() || '#0f0',
+    'local-public': styles.getPropertyValue('--color-local-public').trim() || '#2af',
+    'public-local': styles.getPropertyValue('--color-public-local').trim() || '#f44',
+    'public-public': styles.getPropertyValue('--color-public-public').trim() || '#f0f'
+  };
+}
+
+updateColorMap();
 
 let serverPos = {lat: 0, lon: 0};
 
@@ -164,10 +189,7 @@ function drawConnection(pkt) {
     type: 'LineString',
     coordinates: [srcCoords, dstCoords]
   };
-  let color = '#f0f';
-  if (pkt.type === 'local-local') color = 'green';
-  else if (pkt.type === 'local-public') color = 'blue';
-  else if (pkt.type === 'public-local') color = 'red';
+  const color = colorMap[pkt.type] || '#f0f';
 
   const normKey = [pkt.src, pkt.dst].sort().join('->');
   const queue = animationQueues.get(normKey) || Promise.resolve();
@@ -268,11 +290,16 @@ function updateConnection(pkt) {
   const key = `${pkt.src}:${pkt.src_port}->${pkt.dst}:${pkt.dst_port}:${pkt.proto}`;
   const now = Date.now();
   let rec = activeConnections.get(key);
+  let arrow = '↔';
+  if (pkt.type === 'local-public') arrow = '→';
+  else if (pkt.type === 'public-local') arrow = '←';
   const rowHtml = (
-    `<td><img class="flag" alt="${pkt.src_country_code || ''}" src="https://flagcdn.com/16x12/${(pkt.src_country_code||'').toLowerCase()}.png"> ${pkt.src}</td>`+
-    `<td>→</td>`+
-    `<td><img class="flag" alt="${pkt.dst_country_code || ''}" src="https://flagcdn.com/16x12/${(pkt.dst_country_code||'').toLowerCase()}.png"> ${pkt.dst}</td>`+
-    `<td>${pkt.proto}</td>`
+    `<td><img class="flag" alt="${pkt.src_country_code || ''}" src="https://flagcdn.com/16x12/${(pkt.src_country_code||'').toLowerCase()}.png"></td>`+
+    `<td>${pkt.src}</td>`+
+    `<td>${arrow}</td>`+
+    `<td><img class="flag" alt="${pkt.dst_country_code || ''}" src="https://flagcdn.com/16x12/${(pkt.dst_country_code||'').toLowerCase()}.png"></td>`+
+    `<td>${pkt.dst}</td>`+
+    `<td><span class="badge">${pkt.proto}</span></td>`
   );
   if (!rec) {
     const tr = document.createElement('tr');
@@ -301,6 +328,7 @@ function updateConnection(pkt) {
     rec.tr.dataset.dst = pkt.dst;
   }
   rec.timestamp = now;
+  applySearch();
 }
 
 setInterval(() => {

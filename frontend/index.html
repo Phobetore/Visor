@@ -17,15 +17,19 @@
         <div id="sidebar">
         <h2>Filters</h2>
         <div id="filters">
-            <label><input type="checkbox" id="private-private" checked> Private ➜ Private</label>
-            <label><input type="checkbox" id="private-public" checked> Private ➜ Public</label>
-            <label><input type="checkbox" id="public-private" checked> Public ➜ Private</label>
-            <label><input type="checkbox" id="public-public" checked> Public ➜ Public</label>
+            <label><input type="checkbox" id="private-private" checked> LAN ➜ LAN</label>
+            <label><input type="checkbox" id="private-public" checked> LAN ➜ WAN</label>
+            <label><input type="checkbox" id="public-private" checked> WAN ➜ LAN</label>
+            <label><input type="checkbox" id="public-public" checked> WAN ➜ WAN</label>
         </div>
+        <label id="colorblind-wrapper"><input type="checkbox" id="colorblind-toggle"> Daltonism mode</label>
+        <input type="text" id="search" placeholder="Search IP">
         <h2>Active Connections</h2>
         <table id="connections">
             <thead>
-                <tr><th>Source</th><th></th><th>Destination</th><th>Proto</th></tr>
+                <tr>
+                    <th></th><th>Source</th><th></th><th></th><th>Destination</th><th>Proto</th>
+                </tr>
             </thead>
             <tbody></tbody>
         </table>

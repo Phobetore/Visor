@@ -1,5 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600;700&display=swap');
 
+:root {
+    --color-local-local: #0f0;
+    --color-local-public: #2af;
+    --color-public-local: #f44;
+    --color-public-public: #f0f;
+}
+
+body.colorblind {
+    --color-local-local: #00bcd4;
+    --color-local-public: #ff9800;
+    --color-public-local: #ff9800;
+    --color-public-public: #00bcd4;
+}
+
 body {
     background-color: #0d0d0d;
     color: #2af;
@@ -35,6 +49,11 @@ header {
     padding: 4px 8px;
     font-family: 'Orbitron', sans-serif;
     cursor: pointer;
+}
+
+:focus {
+    outline: 2px solid #ff9800;
+    outline-offset: 2px;
 }
 
 #container {
@@ -96,6 +115,17 @@ header {
     margin-right: 6px;
 }
 
+#colorblind-wrapper {
+    display: block;
+    margin: 6px 0;
+}
+
+#search {
+    width: 100%;
+    margin: 6px 0;
+    box-sizing: border-box;
+}
+
 #sidebar pre {
     white-space: pre-wrap;
     word-break: break-all;
@@ -107,10 +137,17 @@ header {
     margin-bottom: 10px;
 }
 
+#connections thead th {
+    position: sticky;
+    top: 0;
+    background: #111;
+}
+
 #connections th, #connections td {
     border-bottom: 1px solid #333;
-    padding: 4px;
+    padding: 6px 4px;
     text-align: left;
+    line-height: 24px;
 }
 
 #connections tr:hover {
@@ -122,6 +159,15 @@ header {
     height: 12px;
     vertical-align: middle;
     margin-right: 4px;
+}
+
+.badge {
+    background: #222;
+    color: #fff;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 #graph line,
