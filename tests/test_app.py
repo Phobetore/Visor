@@ -7,7 +7,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fastapi.testclient import TestClient
 from backend import main
-from backend import geo
 
 class DummyCapture:
     def __init__(self):
@@ -30,8 +29,11 @@ class DummyCapture:
 
 def test_websocket_close(monkeypatch):
     dummy = DummyCapture()
+    async def dummy_geo(ip):
+        return (0, 0, "")
+
     monkeypatch.setattr(main, "capture", dummy)
-    monkeypatch.setattr(geo, "geolocate_ip", lambda ip: (0, 0, ""))
+    monkeypatch.setattr(main, "async_geolocate_ip", dummy_geo)
     with TestClient(main.app) as client:
         with client.websocket_connect("/ws") as websocket:
             data = websocket.receive_json()

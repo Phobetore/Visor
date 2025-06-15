@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, FileResponse
 
 from .capture import PacketCapture
-from .geo import geolocate_ip
+from .geo import async_geolocate_ip
 
 app = FastAPI(title="Visor")
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
@@ -51,8 +51,8 @@ async def websocket_endpoint(ws: WebSocket):
             for pkt in new_packets:
                 src = pkt.get("src")
                 dst = pkt.get("dst")
-                slat, slon, _ = geolocate_ip(src)
-                dlat, dlon, _ = geolocate_ip(dst)
+                slat, slon, _ = await async_geolocate_ip(src)
+                dlat, dlon, _ = await async_geolocate_ip(dst)
                 info = {
                     "src": src,
                     "dst": dst,
