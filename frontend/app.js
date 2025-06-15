@@ -1,8 +1,15 @@
-const container = document.getElementById('map');
-const width = container.clientWidth || 800;
-const height = container.clientHeight || 500;
+const mapContainer = document.getElementById('map');
+const width = mapContainer.clientWidth || 800;
+const height = mapContainer.clientHeight || 500;
 
 const svg = d3.select('#map').append('svg')
+  .attr('width', '100%')
+  .attr('height', '100%');
+
+const graphContainer = document.getElementById('graph');
+const gwidth = graphContainer.clientWidth || 400;
+const gheight = graphContainer.clientHeight || 500;
+const gsvg = d3.select('#graph').append('svg')
   .attr('width', '100%')
   .attr('height', '100%');
 
@@ -25,6 +32,14 @@ const linesGroup = svg.append('g');
 const seenPairs = new Set();
 const connectionTableBody = document.querySelector('#connections tbody');
 const activeConnections = new Map();
+const graphNodes = new Map();
+let graphLinks = [];
+const linkGroup = gsvg.append('g');
+const nodeGroup = gsvg.append('g');
+const simulation = d3.forceSimulation()
+  .force('link', d3.forceLink().id(d => d.id).distance(60))
+  .force('charge', d3.forceManyBody().strength(-100))
+  .force('center', d3.forceCenter(gwidth / 2, gheight / 2));
 
 d3.json('/static/js/countries-110m.json').then(world => {
   const countries = topojson.feature(world, world.objects.countries);
@@ -103,6 +118,74 @@ function drawConnection(pkt) {
 
 const anomaliesEl = document.getElementById('anomalies');
 
+function updateGraph(pkt) {
+  const s = pkt.src;
+  const d = pkt.dst;
+
+  if (!graphNodes.has(s)) {
+    graphNodes.set(s, {id: s, private: isPrivate(s)});
+  }
+  if (!graphNodes.has(d)) {
+    graphNodes.set(d, {id: d, private: isPrivate(d)});
+  }
+  graphLinks.push({source: s, target: d, type: pkt.type});
+  if (graphLinks.length > 100) graphLinks.shift();
+
+  const nodesArray = Array.from(graphNodes.values());
+  const linksArray = graphLinks;
+
+  const link = linkGroup.selectAll('line').data(linksArray);
+  link.enter().append('line')
+      .attr('stroke', l => colorMap[l.type] || '#f0f')
+      .attr('stroke-width', 1)
+    .merge(link);
+  link.exit().remove();
+
+  const node = nodeGroup.selectAll('circle').data(nodesArray, d => d.id);
+  const nodeEnter = node.enter().append('circle')
+      .attr('r', 5)
+      .attr('class', d => d.private ? 'private' : '')
+      .call(d3.drag()
+        .on('start', dragstarted)
+        .on('drag', dragged)
+        .on('end', dragended));
+  nodeEnter.append('title').text(d => d.id);
+  node.exit().remove();
+
+  simulation.nodes(nodesArray).on('tick', ticked);
+  simulation.force('link').links(linksArray);
+  simulation.alpha(1).restart();
+}
+
+function ticked() {
+  linkGroup.selectAll('line')
+    .attr('x1', d => d.source.x)
+    .attr('y1', d => d.source.y)
+    .attr('x2', d => d.target.x)
+    .attr('y2', d => d.target.y);
+
+  nodeGroup.selectAll('circle')
+    .attr('cx', d => d.x)
+    .attr('cy', d => d.y);
+}
+
+function dragstarted(event, d) {
+  if (!event.active) simulation.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(event, d) {
+  d.fx = event.x;
+  d.fy = event.y;
+}
+
+function dragended(event, d) {
+  if (!event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
 function updateConnection(pkt) {
   const key = `${pkt.src}:${pkt.src_port}->${pkt.dst}:${pkt.dst_port}:${pkt.proto}`;
   const now = Date.now();
@@ -148,6 +231,7 @@ ws.onmessage = (event) => {
   (data.packets || []).forEach(pkt => {
     drawConnection(pkt);
     updateConnection(pkt);
+    updateGraph(pkt);
   });
   (data.anomalies || []).forEach(a => addAnomaly(a));
 };
