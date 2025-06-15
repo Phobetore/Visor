@@ -1,0 +1,9 @@
+{
+  "rules": {
+    "HighTrafficRule": {"threshold": 100},
+    "DestinationSpikeRule": {"spike_threshold": 20},
+    "PortScanRule": {"threshold": 10},
+    "UnusualProtocolRule": {"allowed": ["TCP", "UDP", "ICMP"]},
+    "DDosTargetRule": {"threshold": 50}
+  }
+}

@@ -85,12 +85,35 @@ class UnusualProtocolRule(AnomalyRule):
         return []
 
 
+class DDosTargetRule(AnomalyRule):
+    """Detect many unique sources hitting the same destination."""
+
+    def __init__(self, threshold: int = 50):
+        self.threshold = threshold
+        self.sources: dict[str, set[str]] = {}
+        self.reported: set[str] = set()
+
+    def process(self, packet: dict) -> list[str]:
+        src = packet.get("src")
+        dst = packet.get("dst")
+        if not src or not dst:
+            return []
+        srcs = self.sources.setdefault(dst, set())
+        changed = src not in srcs
+        srcs.add(src)
+        if changed and len(srcs) > self.threshold and dst not in self.reported:
+            self.reported.add(dst)
+            return [f"Possible DDoS on {dst} from {len(srcs)} sources"]
+        return []
+
+
 def default_rules() -> list[AnomalyRule]:
     return [
         HighTrafficRule(),
         DestinationSpikeRule(),
         PortScanRule(),
         UnusualProtocolRule(),
+        DDosTargetRule(),
     ]
 
 
@@ -106,3 +129,39 @@ class AnomalyDetector:
         for rule in self.rules:
             anomalies.extend(rule.process(packet))
         return anomalies
+
+
+def _build_rule(name: str, cfg: dict | None) -> AnomalyRule | None:
+    cfg = cfg or {}
+    if name == "HighTrafficRule":
+        return HighTrafficRule(threshold=int(cfg.get("threshold", 50)))
+    if name == "DestinationSpikeRule":
+        return DestinationSpikeRule(spike_threshold=int(cfg.get("spike_threshold", 20)))
+    if name == "PortScanRule":
+        return PortScanRule(threshold=int(cfg.get("threshold", 10)))
+    if name == "UnusualProtocolRule":
+        rule = UnusualProtocolRule()
+        allowed = cfg.get("allowed")
+        if isinstance(allowed, list):
+            rule.allowed = set(allowed)
+        return rule
+    if name == "DDosTargetRule":
+        return DDosTargetRule(threshold=int(cfg.get("threshold", 50)))
+    return None
+
+
+def create_detector_from_config(config: dict | None) -> AnomalyDetector:
+    """Create an :class:`AnomalyDetector` instance from configuration."""
+    if not config:
+        return AnomalyDetector()
+    rules_cfg = config.get("rules", {})
+    rules: list[AnomalyRule] = []
+    for name, cfg in rules_cfg.items():
+        if cfg is False or (isinstance(cfg, dict) and not cfg.get("enabled", True)):
+            continue
+        rule = _build_rule(name, cfg)
+        if rule:
+            rules.append(rule)
+    if not rules:
+        rules = default_rules()
+    return AnomalyDetector(rules)
