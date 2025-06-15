@@ -1,4 +1,4 @@
-from scapy.all import sniff, Packet, IP
+from scapy.all import sniff, Packet, IP, TCP, UDP, ICMP
 from threading import Thread, Event, Lock
 
 from typing import List
@@ -48,24 +48,48 @@ class PacketCapture:
         with self._lock:
             return [p.summary() for p in self.packets[index:]]
 
+    def _extract_conn(self, packet: Packet) -> dict:
+        """Extract connection information from a packet."""
+        ip_layer = packet[IP]
+        proto = None
+        sport = None
+        dport = None
+        if packet.haslayer(TCP):
+            proto = "TCP"
+            sport = packet[TCP].sport
+            dport = packet[TCP].dport
+        elif packet.haslayer(UDP):
+            proto = "UDP"
+            sport = packet[UDP].sport
+            dport = packet[UDP].dport
+        elif packet.haslayer(ICMP):
+            proto = "ICMP"
+        else:
+            proto = str(ip_layer.proto)
+        return {
+            "src": ip_layer.src,
+            "dst": ip_layer.dst,
+            "sport": sport,
+            "dport": dport,
+            "proto": proto,
+        }
+
     def get_connections(self) -> List[dict]:
-        """Return a list of dicts with src and dst for IP packets."""
+        """Return a list of connection dictionaries for IP packets."""
         connections = []
         with self._lock:
             for p in self.packets:
                 if IP in p:
-                    ip_layer = p[IP]
-                    connections.append({"src": ip_layer.src, "dst": ip_layer.dst})
+                    connections.append(self._extract_conn(p))
             return connections
 
     def get_connections_since(self, index: int) -> List[dict]:
-        """Return src/dst dictionaries for packets since index."""
+        """Return connection dictionaries for packets since index."""
         connections = []
         with self._lock:
             for p in self.packets[index:]:
                 if IP in p:
-                    ip_layer = p[IP]
-                    connections.append({"src": ip_layer.src, "dst": ip_layer.dst})
+                    connections.append(self._extract_conn(p))
             return connections
 
     @property

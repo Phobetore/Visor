@@ -68,6 +68,15 @@ pour afficher un graphe dynamique des paquets capturés. Les liens sont filtrés
 pour éviter les doublons et garder la visualisation lisible. Laissez tourner la
 capture quelques instants et observez l’évolution du réseau !
 
+### 🔍 Règles de détection d’anomalies
+
+Visor applique quelques heuristiques simples pour mettre en avant un comportement suspect :
+
+- trafic important provenant d’une même IP source (>50 paquets observés) ;
+- pic soudain de destinations différentes pour une même source ;
+- scan répété de ports sur une cible ;
+- protocoles inhabituels (autres que TCP/UDP/ICMP).
+
 ---
 
 ## 📍 Roadmap
