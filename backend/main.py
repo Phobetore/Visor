@@ -2,11 +2,12 @@ import asyncio
 from collections import defaultdict
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from ipaddress import ip_address
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, FileResponse
 
 from .capture import PacketCapture
-from .geo import geolocate_ip
+from .geo import async_geolocate_ip
 
 app = FastAPI(title="Visor")
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
@@ -19,6 +20,15 @@ def read_index():
 capture = PacketCapture()
 traffic_count = defaultdict(int)
 reported_anomalies = set()
+
+
+def is_local_ip(ip: str) -> bool:
+    """Return True if the IP address is private or loopback."""
+    try:
+        ip_obj = ip_address(ip)
+        return ip_obj.is_private or ip_obj.is_loopback
+    except ValueError:
+        return False
 
 
 @app.on_event("startup")
@@ -56,6 +66,16 @@ async def websocket_endpoint(ws: WebSocket):
                 proto = pkt.get("proto")
                 slat, slon, _ = geolocate_ip(src)
                 dlat, dlon, _ = geolocate_ip(dst)
+
+                if is_local_ip(src) and is_local_ip(dst):
+                    conn_type = "local-local"
+                elif is_local_ip(src) and not is_local_ip(dst):
+                    conn_type = "local-public"
+                elif not is_local_ip(src) and is_local_ip(dst):
+                    conn_type = "public-local"
+                else:
+                    conn_type = "public-public"
+
                 info = {
                     "src": src,
                     "dst": dst,
@@ -66,6 +86,7 @@ async def websocket_endpoint(ws: WebSocket):
                     "src_lon": slon,
                     "dst_lat": dlat,
                     "dst_lon": dlon,
+                    "type": conn_type,
                 }
                 traffic_count[src] += 1
                 if traffic_count[src] > 50 and src not in reported_anomalies:
