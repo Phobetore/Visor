@@ -21,6 +21,7 @@ svg.append('defs').append('marker')
   .attr('fill', '#f0f');
 
 const linesGroup = svg.append('g');
+const seenPairs = new Set();
 
 d3.json('/static/js/countries-110m.json').then(world => {
   const countries = topojson.feature(world, world.objects.countries);
