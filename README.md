@@ -46,7 +46,7 @@ Visor est un outil de visualisation du trafic réseau en temps réel, conçu pou
 
 ```bash
 git clone https://github.com/Phobetore/Visor.git
-cd visor
+cd Visor
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
