@@ -333,7 +333,8 @@ function addAnomaly(text) {
   anomaliesEl.scrollTop = anomaliesEl.scrollHeight;
 }
 
-const ws = new WebSocket(`ws://${location.host}/ws`);
+const wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
+const ws = new WebSocket(`${wsProto}://${location.host}/ws`);
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   if (data.server_location) {
