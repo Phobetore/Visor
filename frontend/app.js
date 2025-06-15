@@ -137,27 +137,38 @@ function renderGraph() {
   const nodesArray = Array.from(graphNodes.values());
   const linksArray = graphLinks;
 
-  const link = linkGroup.selectAll('line').data(linksArray);
-  link.enter().append('line')
-      .attr('stroke', l => colorMap[l.type] || '#f0f')
-      .attr('stroke-width', 1)
-    .merge(link);
-  link.exit().remove();
+  const linkKey = l => `${typeof l.source === 'object' ? l.source.id : l.source}->${typeof l.target === 'object' ? l.target.id : l.target}`;
+  linkGroup.selectAll('line')
+    .data(linksArray, linkKey)
+    .join(
+      enter => enter.append('line')
+        .attr('stroke', l => colorMap[l.type] || '#f0f')
+        .attr('stroke-width', 1),
+      update => update.attr('stroke', l => colorMap[l.type] || '#f0f'),
+      exit => exit.remove()
+    );
 
-  const node = nodeGroup.selectAll('circle').data(nodesArray, d => d.id);
-  const nodeEnter = node.enter().append('circle')
-      .attr('r', 5)
-      .attr('class', d => d.private ? 'private' : '')
-      .call(d3.drag()
-        .on('start', dragstarted)
-        .on('drag', dragged)
-        .on('end', dragended));
-  nodeEnter.append('title').text(d => d.id);
-  node.exit().remove();
+  nodeGroup.selectAll('circle')
+    .data(nodesArray, d => d.id)
+    .join(
+      enter => {
+        const circle = enter.append('circle')
+          .attr('r', 5)
+          .attr('class', d => d.private ? 'private' : '')
+          .call(d3.drag()
+            .on('start', dragstarted)
+            .on('drag', dragged)
+            .on('end', dragended));
+        circle.append('title').text(d => d.id);
+        return circle;
+      },
+      update => update,
+      exit => exit.remove()
+    );
 
   simulation.nodes(nodesArray).on('tick', ticked);
   simulation.force('link').links(linksArray);
-  simulation.alpha(1).restart();
+  simulation.alphaTarget(0.2).restart();
 }
 
 function updateGraph(pkt) {
